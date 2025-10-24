@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book New Appointment - Receptionist Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'teal': {
+                            50: '#f0fdfa', 100: '#ccfbf1', 200: '#99f6e4', 300: '#5eead4', 400: '#2dd4bf',
+                            500: '#14b8a6', 600: '#0d9488', 700: '#0f766e', 800: '#115e59', 900: '#134e4a',
+                        },
+                        'cyan': {
+                            50: '#ecfeff', 100: '#cffafe', 200: '#a5f3fc', 300: '#67e8f9', 400: '#22d3ee',
+                            500: '#06b6d4', 600: '#0891b2', 700: '#0e7490', 800: '#155e75', 900: '#164e63',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #0d9488 0%, #0891b2 100%);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .time-slot {
+            transition: all 0.3s ease;
+            min-height: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .time-slot:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(13, 148, 136, 0.15);
+        }
+        .time-slot.selected {
+            background: linear-gradient(135deg, #0d9488 0%, #0891b2 100%);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(13, 148, 136, 0.25);
+        }
+        .time-slot.selected h3,
+        .time-slot.selected p {
+            color: white;
+        }
+        .time-slot.selected .text-gray-600 {
+            color: rgba(255, 255, 255, 0.9);
+        }
+        .time-slot.selected .text-gray-500 {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        .time-slot.selected .text-gray-400 {
+            color: rgba(255, 255, 255, 0.6);
+        }
+    </style>
+</head>
+<body class="font-inter bg-gray-50 text-gray-800">
+    <!-- Header -->
+    <header class="bg-white shadow-md py-4 px-6 flex justify-between items-center">
+        <div class="flex items-center">
+            <img src="https://i.ibb.co/S6D712p/Arogya-Medical-Center-Logo.png" alt="Arogya Medical Center Logo" class="h-10 mr-3">
+            <h1 class="text-2xl font-bold text-teal-700">MediFlow Connect</h1>
+        </div>
+        <nav class="flex items-center space-x-4">
+            <a th:href="@{/receptionist.html(email=${receptionist.email})}" class="text-teal-600 hover:text-teal-800 font-medium px-4 py-2 rounded-md transition-colors duration-300">Dashboard</a>
+            <form th:action="@{/logout}" method="post" class="inline-block">
+                <button type="submit" class="bg-red-500 hover:bg-red-600 text-white font-medium px-4 py-2 rounded-md transition-colors duration-300">Logout</button>
+            </form>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto mt-8 p-4">
+        <!-- Welcome Section -->
+        <div class="bg-gradient-to-r from-teal-500 to-cyan-500 text-white p-6 rounded-lg shadow-lg mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-3xl font-bold mb-2">Book New Appointment</h2>
+                    <p class="text-teal-100">Create a new appointment for a patient</p>
+                </div>
+                <div class="hidden md:block">
+                    <div class="text-right">
+                        <p class="text-teal-100 text-sm">Receptionist</p>
+                        <p class="text-white font-semibold" th:text="${receptionist.firstName + ' ' + receptionist.lastName}">Emma Wilson</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Success/Error Messages -->
+        <div th:if="${success}" class="mb-6 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg">
+            <i class="fas fa-check-circle mr-2"></i>
+            <span th:text="${success}">Success message</span>
+        </div>
+        
+        <div th:if="${error}" class="mb-6 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg">
+            <i class="fas fa-exclamation-circle mr-2"></i>
+            <span th:text="${error}">Error message</span>
+        </div>
+
+        <!-- Appointment Form -->
+        <div class="bg-white rounded-2xl shadow-xl p-8 card-hover border border-gray-100 mb-8">
+            <div class="flex items-center mb-6">
+                <div class="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mr-4">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900">Book New Appointment</h3>
+            </div>
+            
+            <form action="/receptionist/appointment/create" method="post" class="space-y-8">
+                <!-- Hidden fields -->
+                <input type="hidden" name="receptionistEmail" th:value="${receptionist.email}">
+                
+                <!-- Patient Information Section -->
+                <div class="border-b border-gray-200 pb-8">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-6 flex items-center">
+                        <div class="w-8 h-8 bg-teal-100 rounded-full flex items-center justify-center mr-3">
+                            <i class="fas fa-user text-teal-600"></i>
+                        </div>
+                        Patient Information
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Patient Name -->
+                        <div>
+                            <label for="patientName" class="block text-sm font-semibold text-gray-700 mb-2">
+                                Patient Name <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <input type="text" id="patientName" name="patientName" required
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-teal-500 focus:outline-none transition-colors duration-300 pr-12"
+                                       placeholder="Enter patient's full name"
+                                       th:value="${prefilledPatientName != null ? prefilledPatientName : ''}">
+                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Patient Email -->
+                        <div>
+                            <label for="patientEmail" class="block text-sm font-semibold text-gray-700 mb-2">
+                                Patient Email <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <input type="email" id="patientEmail" name="patientEmail" required
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-teal-500 focus:outline-none transition-colors duration-300 pr-12"
+                                       placeholder="Enter patient's email address"
+                                       th:value="${prefilledPatientEmail != null ? prefilledPatientEmail : ''}">
+                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Appointment Details Section -->
+                <div class="border-b border-gray-200 pb-8">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-6 flex items-center">
+                        <div class="w-8 h-8 bg-teal-100 rounded-full flex items-center justify-center mr-3">
+                            <i class="fas fa-calendar-alt text-teal-600"></i>
+                        </div>
+                        Appointment Details
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Doctor Selection -->
+                        <div>
+                            <label for="doctorId" class="block text-sm font-semibold text-gray-700 mb-2">
+                                Select Doctor <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <select id="doctorId" name="docId" required
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-teal-500 focus:outline-none transition-colors duration-300 pr-12 appearance-none"
+                                        onchange="loadAvailableTimeSlots()">
+                                    <option value="">Choose a doctor...</option>
+                                    <!-- Doctors will be loaded dynamically -->
+                                </select>
+                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Appointment Date -->
+                        <div>
+                            <label for="appointmentDate" class="block text-sm font-semibold text-gray-700 mb-2">
+                                Appointment Date <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <input type="date" id="appointmentDate" name="appointmentDate" required
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-teal-500 focus:outline-none transition-colors duration-300 pr-12"
+                                       onchange="loadAvailableTimeSlots()">
+                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Available Time Slots Section -->
+                <div id="timeSlotsContainer" class="hidden">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-6 flex items-center">
+                        <div class="w-8 h-8 bg-teal-100 rounded-full flex items-center justify-center mr-3">
+                            <i class="fas fa-clock text-teal-600"></i>
+                        </div>
+                        Available Time Slots
+                    </h3>
+                    
+                    <!-- Loading State -->
+                    <div id="timeSlotsLoading" class="text-center py-12">
+                        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600"></div>
+                        <p class="mt-4 text-gray-600">Loading available time slots...</p>
+                    </div>
+                    
+                    <!-- Time Slots List -->
+                    <div id="timeSlotsList" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+                    
+                    <!-- No Time Slots Message -->
+                    <div id="timeSlotsMessage" class="hidden text-center py-12 text-gray-600">
+                        <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <h4 class="text-lg font-semibold text-gray-600 mb-2">No Available Time Slots</h4>
+                        <p class="text-gray-500">Please select a doctor and date to see available time slots.</p>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="flex justify-end items-center pt-8 border-t border-gray-200">
+                    <button type="submit" id="submitBtn" disabled
+                            class="px-8 py-3 bg-gradient-to-r from-teal-500 to-cyan-500 text-white rounded-lg font-semibold hover:from-teal-600 hover:to-cyan-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none">
+                        <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        Book Appointment
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+            <a th:href="@{/receptionist.html(email=${receptionist.email})}" class="bg-gradient-to-r from-teal-500 to-cyan-500 text-white px-8 py-3 rounded-lg font-semibold hover:from-teal-600 hover:to-cyan-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 text-center">
+                Back to Dashboard
+            </a>
+            <a th:href="@{/receptionist/patient-lookup(email=${receptionist.email})}" class="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-8 py-3 rounded-lg font-semibold hover:from-purple-600 hover:to-pink-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 text-center">
+                Patient Lookup
+            </a>
+        </div>
+    </main>
+
+    <script>
+        // Set minimum date to today
+        document.getElementById('appointmentDate').min = new Date().toISOString().split('T')[0];
+
+        // Global variables
+        let selectedTimeSlot = null;
+        let doctors = [];
+
+        // Load doctors when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDoctors();
+            setupFormSubmission();
+        });
+
+        // Function to load doctors from API
+        async function loadDoctors() {
+            try {
+                console.log('Fetching doctors from API...');
+                const response = await fetch('/api/schedules/doctors');
+                if (response.ok) {
+                    doctors = await response.json();
+                    console.log('Successfully loaded doctors:', doctors.length);
+                    
+                    // Populate doctor dropdown
+                    const doctorSelect = document.getElementById('doctorId');
+                    doctorSelect.innerHTML = '<option value="">Choose a doctor...</option>';
+                    
+                    doctors.forEach(doctor => {
+                        const option = document.createElement('option');
+                        option.value = doctor.docId;
+                        option.textContent = `${doctor.doctorName} - ${doctor.specialization} (${doctor.department})`;
+                        doctorSelect.appendChild(option);
+                    });
+                } else {
+                    console.error('Failed to load doctors, status:', response.status);
+                }
+            } catch (error) {
+                console.error('Error loading doctors:', error);
+            }
+        }
+
+        async function loadAvailableTimeSlots() {
+            const doctorId = document.getElementById('doctorId').value;
+            const appointmentDate = document.getElementById('appointmentDate').value;
+            const timeSlotsContainer = document.getElementById('timeSlotsContainer');
+            const timeSlotsLoading = document.getElementById('timeSlotsLoading');
+            const timeSlotsList = document.getElementById('timeSlotsList');
+            const timeSlotsMessage = document.getElementById('timeSlotsMessage');
+            const submitBtn = document.getElementById('submitBtn');
+            
+            console.log('Loading time slots for:', { doctorId, appointmentDate });
+            
+            // Reset selection
+            selectedTimeSlot = null;
+            submitBtn.disabled = true;
+            
+            if (!doctorId || !appointmentDate) {
+                timeSlotsContainer.classList.add('hidden');
+                timeSlotsMessage.classList.remove('hidden');
+                timeSlotsMessage.textContent = 'Please select a doctor and date to see available time slots';
+                return;
+            }
+            
+            // Show loading state
+            timeSlotsContainer.classList.remove('hidden');
+            timeSlotsLoading.classList.remove('hidden');
+            timeSlotsList.classList.add('hidden');
+            timeSlotsMessage.classList.add('hidden');
+            
+            try {
+                // Fetch schedules directly from the API for the specific doctor and date
+                const response = await fetch(`/api/schedules/doctor/${doctorId}/date/${appointmentDate}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const schedules = await response.json();
+                console.log('Fetched schedules from API:', schedules);
+                
+                // Hide loading, show results
+                timeSlotsLoading.classList.add('hidden');
+                
+                if (schedules.length === 0) {
+                    timeSlotsList.classList.add('hidden');
+                    timeSlotsMessage.classList.remove('hidden');
+                    timeSlotsMessage.textContent = 'No available time slots for the selected doctor and date';
+                } else {
+                    timeSlotsList.classList.remove('hidden');
+                    timeSlotsMessage.classList.add('hidden');
+                    displayTimeSlots(schedules);
+                }
+                
+            } catch (error) {
+                console.error('Error loading time slots:', error);
+                timeSlotsLoading.classList.add('hidden');
+                timeSlotsList.classList.add('hidden');
+                timeSlotsMessage.classList.remove('hidden');
+                timeSlotsMessage.textContent = 'Error loading time slots. Please try again.';
+            }
+        }
+
+        function displayTimeSlots(schedules) {
+            const timeSlotsList = document.getElementById('timeSlotsList');
+            timeSlotsList.innerHTML = '';
+            
+            console.log('Displaying schedules:', schedules);
+            
+            // Create time slot cards for each schedule
+            schedules.forEach(schedule => {
+                const timeSlotDiv = document.createElement('div');
+                timeSlotDiv.className = 'time-slot bg-gradient-to-r from-teal-50 to-cyan-50 border-2 border-gray-200 rounded-xl p-6 cursor-pointer hover:border-teal-500 hover:shadow-lg transition-all duration-300';
+                
+                // Format time range from startTime and endTime
+                let timeRange = '';
+                if (schedule.startTime && schedule.endTime) {
+                    // Convert time strings to readable format
+                    const startTime = schedule.startTime.includes(':') ? schedule.startTime : schedule.startTime + ':00';
+                    const endTime = schedule.endTime.includes(':') ? schedule.endTime : schedule.endTime + ':00';
+                    timeRange = `${startTime} - ${endTime}`;
+                } else {
+                    // Fallback to time period based mapping
+                    switch(schedule.timePeriod.toLowerCase()) {
+                        case 'morning':
+                            timeRange = '8:00 AM - 12:00 PM';
+                            break;
+                        case 'afternoon':
+                            timeRange = '1:00 PM - 5:00 PM';
+                            break;
+                        case 'evening':
+                            timeRange = '6:00 PM - 10:00 PM';
+                            break;
+                        default:
+                            timeRange = schedule.timePeriod;
+                    }
+                }
+                
+                timeSlotDiv.innerHTML = `
+                    <div class="text-center">
+                        <div class="w-12 h-12 bg-gradient-to-r from-teal-500 to-cyan-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-2 capitalize">${schedule.timePeriod}</h3>
+                        <p class="text-gray-600 mb-2 font-medium">${timeRange}</p>
+                        <p class="text-sm text-gray-500 mb-3">Room ${schedule.roomId}</p>
+                        <div class="flex items-center justify-center text-teal-600">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <span class="text-sm font-medium">Available</span>
+                        </div>
+                        <div class="mt-2 text-xs text-gray-400">
+                            Schedule ID: ${schedule.doctorScheduleId}
+                        </div>
+                    </div>
+                `;
+                
+                timeSlotDiv.addEventListener('click', function() {
+                    // Remove previous selection
+                    document.querySelectorAll('.time-slot').forEach(slot => {
+                        slot.classList.remove('selected');
+                    });
+                    
+                    // Add selection to clicked slot
+                    this.classList.add('selected');
+                    selectedTimeSlot = schedule;
+                    
+                    // Enable submit button
+                    document.getElementById('submitBtn').disabled = false;
+                    
+                    console.log('Selected time slot:', selectedTimeSlot);
+                });
+                
+                timeSlotsList.appendChild(timeSlotDiv);
+            });
+        }
+
+        // Handle form submission
+        function setupFormSubmission() {
+            const appointmentForm = document.querySelector('form[action*="/receptionist/appointment/create"]');
+            if (appointmentForm) {
+                appointmentForm.addEventListener('submit', function(e) {
+                    if (!selectedTimeSlot) {
+                        e.preventDefault();
+                        alert('Please select a time slot before booking the appointment.');
+                        return;
+                    }
+                    
+                    // Add hidden inputs for time slot data
+                    const timeSlotInput = document.createElement('input');
+                    timeSlotInput.type = 'hidden';
+                    timeSlotInput.name = 'timeSlot';
+                    timeSlotInput.value = selectedTimeSlot.timePeriod;
+                    appointmentForm.appendChild(timeSlotInput);
+                    
+                    const roomIdInput = document.createElement('input');
+                    roomIdInput.type = 'hidden';
+                    roomIdInput.name = 'roomId';
+                    roomIdInput.value = selectedTimeSlot.roomId;
+                    appointmentForm.appendChild(roomIdInput);
+                    
+                    const scheduleIdInput = document.createElement('input');
+                    scheduleIdInput.type = 'hidden';
+                    scheduleIdInput.name = 'scheduleId';
+                    scheduleIdInput.value = selectedTimeSlot.doctorScheduleId;
+                    appointmentForm.appendChild(scheduleIdInput);
+                    
+                    console.log('Added hidden inputs:');
+                    console.log('  timeSlot:', selectedTimeSlot.timePeriod);
+                    console.log('  roomId:', selectedTimeSlot.roomId);
+                    console.log('  scheduleId:', selectedTimeSlot.doctorScheduleId);
+                });
+            }
+        }
+    </script>
+</body>
+</html>

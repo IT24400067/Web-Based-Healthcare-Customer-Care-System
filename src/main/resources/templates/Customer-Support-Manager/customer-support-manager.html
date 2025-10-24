@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Support Manager Dashboard - MediFlow Connect</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'teal': {
+                            50: '#f0fdfa', 100: '#ccfbf1', 200: '#99f6e4', 300: '#5eead4', 400: '#2dd4bf',
+                            500: '#14b8a6', 600: '#0d9488', 700: '#0f766e', 800: '#115e59', 900: '#134e4a',
+                        },
+                        'cyan': {
+                            50: '#ecfeff', 100: '#cffafe', 200: '#a5f3fc', 300: '#67e8f9', 400: '#22d3ee',
+                            500: '#06b6d4', 600: '#0891b2', 700: '#0e7490', 800: '#155e75', 900: '#164e63',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #0d9488 0%, #0891b2 100%);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        .status-open { background-color: #fef3c7; color: #92400e; }
+        .status-in-progress { background-color: #dbeafe; color: #1e40af; }
+        .status-resolved { background-color: #d1fae5; color: #065f46; }
+        .status-closed { background-color: #f3f4f6; color: #374151; }
+        .priority-low { background-color: #f0fdf4; color: #166534; }
+        .priority-medium { background-color: #fef3c7; color: #92400e; }
+        .priority-high { background-color: #fecaca; color: #991b1b; }
+        .priority-urgent { background-color: #fca5a5; color: #7f1d1d; }
+    </style>
+</head>
+<body class="font-inter bg-gray-50 text-gray-800">
+    <!-- Header -->
+    <header class="bg-white shadow-md py-4 px-6 flex justify-between items-center">
+        <div class="flex items-center">
+            <img src="https://i.ibb.co/S6D712p/Arogya-Medical-Center-Logo.png" alt="Arogya Medical Center Logo" class="h-10 mr-3">
+            <h1 class="text-2xl font-bold text-teal-700">MediFlow Connect</h1>
+        </div>
+        <nav class="flex items-center space-x-4">
+            <a href="/" class="text-teal-600 hover:text-teal-800 font-medium px-4 py-2 rounded-md transition-colors duration-300">Home</a>
+            <form th:action="@{/logout}" method="post" class="inline-block">
+                <button type="submit" class="bg-red-500 hover:bg-red-600 text-white font-medium px-4 py-2 rounded-md transition-colors duration-300">Logout</button>
+            </form>
+        </nav>
+    </header>
+
+    <main class="container mx-auto mt-8 p-4">
+        <!-- Hidden field to store support manager email for JavaScript -->
+        <input type="hidden" id="supportManagerEmail" th:value="${supportManager.email}" />
+        
+        <!-- Welcome Section -->
+        <div class="bg-gradient-to-r from-teal-500 to-cyan-500 text-white p-6 rounded-lg shadow-lg mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-3xl font-bold mb-2">Welcome, <span th:text="${supportManager.fullName}">Customer Support Manager</span>!</h2>
+                    <p class="text-teal-100">Your comprehensive dashboard for managing customer support tickets and feedback.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Success/Error Messages -->
+        <div th:if="${param.success}" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
+            <span class="block sm:inline" th:if="${param.success[0] == 'login_successful'}">✅ Login successful! Welcome to your dashboard.</span>
+            <span class="block sm:inline" th:if="${param.success[0] == 'ticket_updated'}">✅ Support ticket updated successfully!</span>
+            <span class="block sm:inline" th:if="${param.success[0] == 'reply_sent'}">✅ Reply sent successfully!</span>
+        </div>
+
+        <div th:if="${param.error}" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+            <span class="block sm:inline" th:text="${param.error[0]}">Error message</span>
+        </div>
+
+        <!-- Export Section -->
+        <div class="bg-white rounded-2xl shadow-xl p-8 card-hover border border-gray-100 mb-8">
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center">
+                    <div class="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center mr-4">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900">Export Reports</h3>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <button onclick="exportTicketsPDF()" class="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    Export Tickets (PDF)
+                </button>
+                
+                <button onclick="exportFeedbackPDF()" class="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    Export Feedback (PDF)
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Dashboard Layout -->
+        <div class="flex flex-col lg:flex-row gap-8">
+            <!-- Profile Sidebar -->
+            <div class="lg:w-80 bg-gradient-to-b from-teal-500 to-cyan-600 rounded-xl shadow-xl p-6 text-white">
+                <div class="flex items-center mb-8">
+                    <div class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center mr-3">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364M12 2.25a9.75 9.75 0 100 19.5 9.75 9.75 0 000-19.5z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold">Support Manager</h3>
+                </div>
+                
+                <!-- Profile Info -->
+                <div class="mb-8">
+                    <div class="mb-6">
+                        <div>
+                            <p class="font-semibold text-lg" th:text="${supportManager.fullName != null ? supportManager.fullName : 'Customer Support Manager'}">Customer Support Manager</p>
+                            <p class="text-sm text-teal-100" th:text="${supportManager.email}">support@example.com</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="space-y-3">
+                    <button onclick="loadAllTickets()" class="w-full flex items-center bg-white bg-opacity-10 hover:bg-opacity-20 text-white py-3 px-4 rounded-lg transition-all duration-300 border border-white border-opacity-20 hover:border-opacity-40">
+                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <span class="font-medium">Load All Tickets</span>
+                    </button>
+                    <button onclick="loadAllFeedback()" class="w-full flex items-center bg-white bg-opacity-10 hover:bg-opacity-20 text-white py-3 px-4 rounded-lg transition-all duration-300 border border-white border-opacity-20 hover:border-opacity-40">
+                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path>
+                        </svg>
+                        <span class="font-medium">Load All Feedback</span>
+                    </button>
+                    <button onclick="showSearchForm()" class="w-full flex items-center bg-white bg-opacity-10 hover:bg-opacity-20 text-white py-3 px-4 rounded-lg transition-all duration-300 border border-white border-opacity-20 hover:border-opacity-40">
+                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                        <span class="font-medium">Search by ID</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Main Content Area -->
+            <div class="flex-1">
+                <!-- Search Section -->
+                <div id="searchSection" class="bg-white rounded-2xl shadow-xl p-8 card-hover border border-gray-100 mb-8" style="display: none;">
+                    <div class="flex items-center mb-6">
+                        <div class="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mr-4">
+                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-900">Search by ID</h3>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="ticketSearchId" class="block text-sm font-medium text-gray-700 mb-2">Search Support Ticket by ID</label>
+                            <div class="flex">
+                                <input type="number" id="ticketSearchId" class="flex-1 px-4 py-3 border border-gray-300 rounded-l-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-300" placeholder="Enter ticket ID">
+                                <button onclick="searchTicketById()" class="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-r-lg font-semibold hover:from-purple-600 hover:to-pink-600 transition-all duration-300">
+                                    Search
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label for="feedbackSearchId" class="block text-sm font-medium text-gray-700 mb-2">Search Feedback by ID</label>
+                            <div class="flex">
+                                <input type="number" id="feedbackSearchId" class="flex-1 px-4 py-3 border border-gray-300 rounded-l-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-300" placeholder="Enter feedback ID">
+                                <button onclick="searchFeedbackById()" class="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-r-lg font-semibold hover:from-purple-600 hover:to-pink-600 transition-all duration-300">
+                                    Search
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Two Column Layout: Support Tickets and Customer Feedback -->
+                <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                    <!-- Support Tickets Section (Left Column) -->
+                    <div class="bg-white rounded-2xl shadow-xl p-8 card-hover border border-gray-100">
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="flex items-center">
+                                <div class="w-16 h-16 bg-gradient-to-r from-teal-500 to-cyan-500 rounded-full flex items-center justify-center mr-4">
+                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                </div>
+                                <h3 class="text-2xl font-bold text-gray-900">Support Tickets</h3>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                <button onclick="filterTickets('all')" class="px-3 py-1 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm">All</button>
+                                <button onclick="filterTickets('open')" class="px-3 py-1 bg-orange-200 text-orange-700 rounded-lg hover:bg-orange-300 transition-colors text-sm">Open</button>
+                                <button onclick="filterTickets('in-progress')" class="px-3 py-1 bg-blue-200 text-blue-700 rounded-lg hover:bg-blue-300 transition-colors text-sm">In Progress</button>
+                                <button onclick="filterTickets('resolved')" class="px-3 py-1 bg-green-200 text-green-700 rounded-lg hover:bg-green-300 transition-colors text-sm">Resolved</button>
+                            </div>
+                        </div>
+                        
+                        <div id="ticketsContainer" class="space-y-4">
+                            <!-- Tickets will be loaded here dynamically -->
+                            <div class="text-center text-gray-500 py-8">
+                                <svg class="w-12 h-12 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                <p>Click "Load All Tickets" to view support tickets</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Customer Feedback Section (Right Column) -->
+                    <div class="bg-white rounded-2xl shadow-xl p-8 card-hover border border-gray-100">
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="flex items-center">
+                                <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center mr-4">
+                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path>
+                                    </svg>
+                                </div>
+                                <h3 class="text-2xl font-bold text-gray-900">Customer Feedback</h3>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                <button onclick="filterFeedback('all')" class="px-3 py-1 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm">All</button>
+                                <button onclick="filterFeedback('5')" class="px-3 py-1 bg-green-200 text-green-700 rounded-lg hover:bg-green-300 transition-colors text-sm">5★</button>
+                                <button onclick="filterFeedback('4')" class="px-3 py-1 bg-blue-200 text-blue-700 rounded-lg hover:bg-blue-300 transition-colors text-sm">4★</button>
+                                <button onclick="filterFeedback('3')" class="px-3 py-1 bg-yellow-200 text-yellow-700 rounded-lg hover:bg-yellow-300 transition-colors text-sm">3★</button>
+                                <button onclick="filterFeedback('1-2')" class="px-3 py-1 bg-red-200 text-red-700 rounded-lg hover:bg-red-300 transition-colors text-sm">1-2★</button>
+                            </div>
+                        </div>
+                        
+                        <div id="feedbackContainer" class="space-y-4">
+                            <!-- Feedback will be loaded here dynamically -->
+                            <div class="text-center text-gray-500 py-8">
+                                <svg class="w-12 h-12 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path>
+                                </svg>
+                                <p>Click "Load All Feedback" to view customer feedback</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-12 mt-12">
+        <div class="container mx-auto px-6">
+            <div class="grid md:grid-cols-4 gap-8">
+                <!-- Hospital Info -->
+                <div>
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-10 h-10 bg-gradient-to-br from-teal-500 to-cyan-500 rounded-full flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg">AROGYA MEDICAL CENTER</h3>
+                            <p class="text-sm text-gray-400">MediFlow Connect Portal</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-400 text-sm leading-relaxed">
+                        Customer support portal for managing tickets, feedback, and ensuring exceptional patient care experiences.
+                    </p>
+                </div>
+
+                <!-- Support Services -->
+                <div>
+                    <h4 class="font-semibold text-lg mb-4">Support Services</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="/customer-support-manager/ticket-reply.html" class="text-gray-400 hover:text-white transition-colors">Ticket Management</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Feedback Analysis</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Export Reports</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Support Analytics</a></li>
+                    </ul>
+                </div>
+
+                <!-- Quick Links -->
+                <div>
+                    <h4 class="font-semibold text-lg mb-4">Quick Links</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="/" class="text-gray-400 hover:text-white transition-colors">Home</a></li>
+                        <li><a href="/login.html" class="text-gray-400 hover:text-white transition-colors">Login</a></li>
+                        <li><a href="/signup.html" class="text-gray-400 hover:text-white transition-colors">Sign Up</a></li>
+                        <li><a href="tel:1313" class="text-gray-400 hover:text-white transition-colors">Emergency: 1313</a></li>
+                    </ul>
+                </div>
+
+                <!-- Support Statistics -->
+                <div>
+                    <h4 class="font-semibold text-lg mb-4">Support Statistics</h4>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-400">Open Tickets</span>
+                            <span class="text-orange-400 text-sm font-medium">5</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-400">Resolved Today</span>
+                            <span class="text-green-400 text-sm font-medium">12</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-400">Avg Response Time</span>
+                            <span class="text-blue-400 text-sm font-medium">2.5h</span>
+                        </div>
+                    </div>
+                    <div class="mt-4 text-sm text-gray-400">
+                        <p>📧 support@arogyamedical.com</p>
+                        <p>📞 +94 11 466 5500</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-sm text-gray-400">
+                <p>&copy; 2025 Arogya Medical Center. All Rights Reserved. | MediFlow Connect Portal - Customer Support Dashboard</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Reply Modal -->
+    <div id="replyModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-2xl">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-2xl font-bold text-gray-900">Reply to Support Ticket</h3>
+                    <button onclick="closeReplyModal()" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div id="ticketDetails" class="mb-6 p-4 bg-gray-50 rounded-lg">
+                    <!-- Ticket details will be populated here -->
+                </div>
+                
+                <form id="replyForm">
+                    <input type="hidden" id="replyTicketId" />
+                    <div class="mb-6">
+                        <label for="replyMessage" class="block text-sm font-medium text-gray-700 mb-2">Your Reply</label>
+                        <textarea id="replyMessage" rows="4" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300" placeholder="Enter your reply to the customer..."></textarea>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label for="newStatus" class="block text-sm font-medium text-gray-700 mb-2">Update Status</label>
+                        <select id="newStatus" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300">
+                            <option value="open">Open</option>
+                            <option value="in-progress">In Progress</option>
+                            <option value="resolved">Resolved</option>
+                            <option value="closed">Closed</option>
+                        </select>
+                    </div>
+                    
+                    <div class="flex justify-end space-x-4">
+                        <button type="button" onclick="closeReplyModal()" class="px-6 py-3 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors">
+                            Cancel
+                        </button>
+                        <button type="submit" class="px-6 py-3 bg-gradient-to-r from-teal-500 to-cyan-500 text-white rounded-lg hover:from-teal-600 hover:to-cyan-600 transition-all duration-300">
+                            Send Reply
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let allTickets = [];
+        let allFeedback = [];
+        let currentTicketFilter = 'all';
+        let currentFeedbackFilter = 'all';
+
+        // Get support manager email from hidden field
+        const supportManagerEmail = document.getElementById('supportManagerEmail').value;
+
+        // Load all support tickets
+        function loadAllTickets() {
+            fetch('/api/support-tickets/all')
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Tickets API Response:', data);
+                    if (data.success) {
+                        allTickets = data.data; // Changed from data.tickets to data.data
+                        displayTickets(allTickets);
+                    } else {
+                        alert('Error loading tickets: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error loading tickets');
+                });
+        }
+
+        // Load all feedback
+        function loadAllFeedback() {
+            fetch('/api/feedback/all')
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Feedback API Response:', data);
+                    if (data.success) {
+                        allFeedback = data.data; // Changed from data.feedback to data.data
+                        displayFeedback(allFeedback);
+                    } else {
+                        alert('Error loading feedback: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error loading feedback');
+                });
+        }
+
+
+        // Display tickets
+        function displayTickets(tickets) {
+            const container = document.getElementById('ticketsContainer');
+            
+            if (tickets.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center text-gray-500 py-8">
+                        <svg class="w-12 h-12 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <p>No tickets found</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = tickets.map(ticket => `
+                <div class="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-3 mb-2">
+                                <h4 class="text-lg font-semibold text-gray-900">Ticket #${ticket.ticketId}</h4>
+                                <span class="px-3 py-1 rounded-full text-sm font-medium status-${ticket.status.replace(' ', '-')}">${ticket.status}</span>
+                                <span class="px-3 py-1 rounded-full text-sm font-medium priority-${ticket.priority}">${ticket.priority}</span>
+                            </div>
+                            <p class="text-gray-600 mb-2"><strong>Subject:</strong> ${ticket.subject}</p>
+                            <p class="text-gray-600 mb-2"><strong>Category:</strong> ${ticket.category}</p>
+                            <p class="text-gray-600 mb-2"><strong>Customer:</strong> ${ticket.userEmail}</p>
+                            <p class="text-gray-600 mb-2"><strong>Created:</strong> ${new Date(ticket.createdAt).toLocaleString()}</p>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button onclick="replyToTicket(${ticket.ticketId})" class="px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors">
+                                Reply
+                            </button>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <p class="text-gray-800"><strong>Description:</strong></p>
+                        <p class="text-gray-700">${ticket.description}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Display feedback
+        function displayFeedback(feedback) {
+            const container = document.getElementById('feedbackContainer');
+            
+            if (feedback.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center text-gray-500 py-8">
+                        <svg class="w-12 h-12 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path>
+                        </svg>
+                        <p>No feedback found</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = feedback.map(feedback => `
+                <div class="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-3 mb-2">
+                                <h4 class="text-lg font-semibold text-gray-900">Feedback #${feedback.feedbackId}</h4>
+                                <div class="flex items-center">
+                                    ${'★'.repeat(feedback.rating)}${'☆'.repeat(5 - feedback.rating)}
+                                    <span class="ml-2 text-sm text-gray-600">(${feedback.rating}/5)</span>
+                                </div>
+                            </div>
+                            <p class="text-gray-600 mb-2"><strong>Type:</strong> ${feedback.feedbackType}</p>
+                            <p class="text-gray-600 mb-2"><strong>Customer:</strong> ${feedback.userEmail}</p>
+                            <p class="text-gray-600 mb-2"><strong>Submitted:</strong> ${new Date(feedback.createdAt).toLocaleString()}</p>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <p class="text-gray-800"><strong>Message:</strong></p>
+                        <p class="text-gray-700">${feedback.message}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Filter tickets
+        function filterTickets(status) {
+            currentTicketFilter = status;
+            let filteredTickets = allTickets;
+            
+            if (status !== 'all') {
+                filteredTickets = allTickets.filter(ticket => ticket.status === status);
+            }
+            
+            displayTickets(filteredTickets);
+        }
+
+        // Filter feedback
+        function filterFeedback(rating) {
+            currentFeedbackFilter = rating;
+            let filteredFeedback = allFeedback;
+            
+            if (rating !== 'all') {
+                if (rating === '1-2') {
+                    filteredFeedback = allFeedback.filter(feedback => feedback.rating <= 2);
+                } else {
+                    filteredFeedback = allFeedback.filter(feedback => feedback.rating == rating);
+                }
+            }
+            
+            displayFeedback(filteredFeedback);
+        }
+
+        // Search ticket by ID
+        function searchTicketById() {
+            const ticketId = document.getElementById('ticketSearchId').value;
+            if (!ticketId) {
+                alert('Please enter a ticket ID');
+                return;
+            }
+
+            fetch(`/api/support-tickets/${ticketId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        displayTickets([data.data]); // Changed from data.ticket to data.data
+                    } else {
+                        alert('Ticket not found: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error searching for ticket');
+                });
+        }
+
+        // Search feedback by ID
+        function searchFeedbackById() {
+            const feedbackId = document.getElementById('feedbackSearchId').value;
+            if (!feedbackId) {
+                alert('Please enter a feedback ID');
+                return;
+            }
+
+            fetch(`/api/feedback/${feedbackId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        displayFeedback([data.data]); // Changed from data.feedback to data.data
+                    } else {
+                        alert('Feedback not found: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error searching for feedback');
+                });
+        }
+
+        // Show search form
+        function showSearchForm() {
+            const searchSection = document.getElementById('searchSection');
+            searchSection.style.display = searchSection.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // Reply to ticket - redirect to reply page
+        function replyToTicket(ticketId) {
+            window.location.href = `/ticket-reply.html?ticketId=${ticketId}`;
+        }
+
+        // Close reply modal
+        function closeReplyModal() {
+            document.getElementById('replyModal').classList.add('hidden');
+            document.getElementById('replyForm').reset();
+        }
+
+        // Handle reply form submission
+        document.getElementById('replyForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const ticketId = document.getElementById('replyTicketId').value;
+            const replyMessage = document.getElementById('replyMessage').value;
+            const newStatus = document.getElementById('newStatus').value;
+            
+            if (!replyMessage.trim()) {
+                alert('Please enter a reply message');
+                return;
+            }
+            
+            const replyData = {
+                ticketId: ticketId,
+                replyMessage: replyMessage,
+                newStatus: newStatus
+            };
+            
+            fetch('/api/support-tickets/reply', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(replyData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Reply sent successfully!');
+                    closeReplyModal();
+                    // Update the ticket status in the local array
+                    const ticketIndex = allTickets.findIndex(t => t.ticketId == ticketId);
+                    if (ticketIndex !== -1) {
+                        allTickets[ticketIndex].status = newStatus;
+                        updateTicketMetrics();
+                        displayTickets(allTickets.filter(ticket => 
+                            currentTicketFilter === 'all' || ticket.status === currentTicketFilter
+                        ));
+                    }
+                } else {
+                    alert('Error sending reply: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error sending reply');
+            });
+        });
+
+        // Initialize page
+        // Export functions
+        function exportTicketsPDF() {
+            console.log('Exporting tickets to PDF...');
+            
+            // Show loading state
+            const button = event.target;
+            const originalText = button.innerHTML;
+            button.innerHTML = '<svg class="w-6 h-6 mr-3 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>Exporting...';
+            button.disabled = true;
+            
+            fetch('/api/export/tickets/pdf', {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/pdf',
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.blob();
+            })
+            .then(blob => {
+                // Create download link
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `support-tickets-${new Date().toISOString().split('T')[0]}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                
+                console.log('Tickets PDF exported successfully');
+            })
+            .catch(error => {
+                console.error('Error exporting tickets PDF:', error);
+                alert('Error exporting tickets PDF: ' + error.message);
+            })
+            .finally(() => {
+                // Restore button state
+                button.innerHTML = originalText;
+                button.disabled = false;
+            });
+        }
+
+        function exportFeedbackPDF() {
+            console.log('Exporting feedback to PDF...');
+            
+            // Show loading state
+            const button = event.target;
+            const originalText = button.innerHTML;
+            button.innerHTML = '<svg class="w-6 h-6 mr-3 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>Exporting...';
+            button.disabled = true;
+            
+            fetch('/api/export/feedback/pdf', {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/pdf',
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.blob();
+            })
+            .then(blob => {
+                // Create download link
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `customer-feedback-${new Date().toISOString().split('T')[0]}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                
+                console.log('Feedback PDF exported successfully');
+            })
+            .catch(error => {
+                console.error('Error exporting feedback PDF:', error);
+                alert('Error exporting feedback PDF: ' + error.message);
+            })
+            .finally(() => {
+                // Restore button state
+                button.innerHTML = originalText;
+                button.disabled = false;
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load initial data
+            loadAllTickets();
+            loadAllFeedback();
+        });
+    </script>
+</body>
+</html>

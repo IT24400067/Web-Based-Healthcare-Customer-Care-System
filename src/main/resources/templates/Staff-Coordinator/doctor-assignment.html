@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Assignment - MediFlow Connect</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'teal': {
+                            50: '#f0fdfa', 100: '#ccfbf1', 200: '#99f6e4', 300: '#5eead4', 400: '#2dd4bf',
+                            500: '#14b8a6', 600: '#0d9488', 700: '#0f766e', 800: '#115e59', 900: '#134e4a',
+                        },
+                        'cyan': {
+                            50: '#ecfeff', 100: '#cffafe', 200: '#a5f3fc', 300: '#67e8f9', 400: '#22d3ee',
+                            500: '#06b6d4', 600: '#0891b2', 700: '#0e7490', 800: '#155e75', 900: '#164e63',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #0d9488 0%, #0891b2 100%);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="font-inter bg-gray-50 text-gray-800">
+    <!-- Header -->
+    <header class="bg-white shadow-md py-4 px-6 flex justify-between items-center">
+        <div class="flex items-center">
+            <img src="https://i.ibb.co/S6D712p/Arogya-Medical-Center-Logo.png" alt="Arogya Medical Center Logo" class="h-10 mr-3">
+            <h1 class="text-2xl font-bold text-teal-700">MediFlow Connect</h1>
+        </div>
+        <nav class="flex items-center space-x-4">
+            <a href="/staff-coordinator.html" class="text-teal-600 hover:text-teal-800 font-medium px-4 py-2 rounded-md transition-colors duration-300">← Dashboard</a>
+            <form th:action="@{/logout}" method="post" class="inline-block">
+                <button type="submit" class="bg-red-500 hover:bg-red-600 text-white font-medium px-4 py-2 rounded-md transition-colors duration-300">Logout</button>
+            </form>
+        </nav>
+    </header>
+
+    <main class="container mx-auto mt-8 p-4">
+        <!-- Welcome Section -->
+        <div class="bg-gradient-to-r from-teal-500 to-cyan-500 text-white p-6 rounded-lg shadow-lg mb-8">
+            <h2 class="text-3xl font-bold mb-2">🏥 Doctor Assignment</h2>
+            <p class="text-teal-100">Assign doctors to rooms and schedules</p>
+        </div>
+
+        <!-- Success/Error Messages -->
+        <div th:if="${param.success}" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
+            <span class="block sm:inline" th:if="${param.success[0] == 'doctor_assigned'}">✅ Doctor assigned successfully!</span>
+            <span class="block sm:inline" th:if="${param.success[0] == 'doctor_assigned_multiple'}">✅ Doctor assigned successfully to <span th:text="${param.count[0]}">multiple</span> schedule(s)!</span>
+            <span class="block sm:inline" th:if="${param.success[0] == 'assignment_updated'}">✅ Assignment updated successfully!</span>
+            <span class="block sm:inline" th:if="${param.success[0] == 'assignment_cancelled'}">✅ Assignment cancelled successfully!</span>
+        </div>
+
+        <div th:if="${param.warning}" class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded relative mb-4" role="alert">
+            <span class="block sm:inline" th:if="${param.warning[0] == 'partial_assignment'}">⚠️ Partial assignment completed: <span th:text="${param.success[0]}">0</span> successful, <span th:text="${param.errors[0]}">0</span> failed</span>
+        </div>
+
+        <div th:if="${param.error}" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+            <span class="block sm:inline" th:if="${param.error[0] == 'doctor_required'}">❌ Please select a doctor to assign!</span>
+            <span class="block sm:inline" th:if="${param.error[0] == 'room_required'}">❌ Please select a room for the assignment!</span>
+            <span class="block sm:inline" th:if="${param.error[0] == 'time_period_required'}">❌ Please select a time period for the assignment!</span>
+            <span class="block sm:inline" th:if="${param.error[0] == 'dates_required'}">❌ Please select at least one date for the assignment!</span>
+            <span class="block sm:inline" th:if="${param.error[0] == 'assignment_failed'}">
+                ❌ Assignment failed. Please try again!
+                <span th:if="${param.details}" class="block mt-2 text-sm">
+                    <strong>Details:</strong> <span th:text="${param.details[0]}"></span>
+                </span>
+            </span>
+            <span class="block sm:inline" th:if="${param.error[0] != 'doctor_required' and param.error[0] != 'room_required' and param.error[0] != 'time_period_required' and param.error[0] != 'dates_required' and param.error[0] != 'assignment_failed'}" th:text="${param.error[0]}">Error message</span>
+        </div>
+
+        <!-- Main Content -->
+        <div class="max-w-4xl mx-auto">
+            
+            <!-- Assignment Form -->
+            <div class="bg-white rounded-2xl shadow-xl p-8 card-hover border border-gray-100">
+                <div class="flex items-center mb-6">
+                    <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center mr-4">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900">Assign Doctor</h3>
+                </div>
+                
+                <form th:action="@{/staff-coordinator/doctors/assign}" method="post" class="space-y-6">
+                    <input type="hidden" name="staffCoordinatorEmail" th:value="${staffCoordinator.email}">
+                    
+                    <div>
+                        <label for="doctorId" class="block text-sm font-medium text-gray-700 mb-2">Select Doctor</label>
+                        <select id="doctorId" name="doctorId" required 
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300">
+                            <option value="">Choose a doctor...</option>
+                            <option th:if="${#lists.isEmpty(doctors)}" value="" disabled>No doctors available. Please add doctors first.</option>
+                            <option th:each="doctor : ${doctors}" 
+                                    th:value="${doctor.docId}" 
+                                    th:text="${doctor.doctorName + ' - ' + doctor.specialization + ' (' + doctor.department + ')'}"></option>
+                        </select>
+                        <p th:if="${#lists.isEmpty(doctors)}" class="text-sm text-orange-600 mt-2">
+                            <a href="/staff-coordinator/doctors/management" class="text-teal-600 hover:text-teal-800 underline">Add doctors</a> to enable assignments.
+                        </p>
+                    </div>
+                    
+                    <div>
+                        <label for="roomId" class="block text-sm font-medium text-gray-700 mb-2">Room Number</label>
+                        <select id="roomId" name="roomId" required 
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300">
+                            <option value="">Choose a room...</option>
+                            <option th:if="${#lists.isEmpty(rooms)}" value="" disabled>No rooms available. Please add rooms first.</option>
+                            <option th:each="room : ${rooms}" 
+                                    th:value="${room.roomId}" 
+                                    th:text="'Room ' + ${room.roomId} + ' - Capacity: ' + ${room.roomCapacity} + ' (Remaining: ' + ${room.remainingCapacity} + ')'"></option>
+                        </select>
+                        <p th:if="${#lists.isEmpty(rooms)}" class="text-sm text-orange-600 mt-2">
+                            <a href="/staff-coordinator.html" class="text-teal-600 hover:text-teal-800 underline">Contact administrator</a> to add rooms.
+                        </p>
+                    </div>
+                    
+                    <div>
+                        <label for="timePeriod" class="block text-sm font-medium text-gray-700 mb-2">Schedule</label>
+                        <select id="timePeriod" name="timePeriod" required 
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300">
+                            <option value="">Choose a schedule...</option>
+                            <option th:each="schedule : ${schedules}" 
+                                    th:value="${schedule}" 
+                                    th:text="${schedule}"></option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Available Dates (Select Multiple)</label>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                            <input type="date" name="availableDates" th:min="${#temporals.format(#temporals.createToday(), 'yyyy-MM-dd')}"
+                                   class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300 text-sm">
+                            <input type="date" name="availableDates" th:min="${#temporals.format(#temporals.createToday(), 'yyyy-MM-dd')}"
+                                   class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300 text-sm">
+                            <input type="date" name="availableDates" th:min="${#temporals.format(#temporals.createToday(), 'yyyy-MM-dd')}"
+                                   class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300 text-sm">
+                            <input type="date" name="availableDates" th:min="${#temporals.format(#temporals.createToday(), 'yyyy-MM-dd')}"
+                                   class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300 text-sm">
+                            <input type="date" name="availableDates" th:min="${#temporals.format(#temporals.createToday(), 'yyyy-MM-dd')}"
+                                   class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300 text-sm">
+                            <input type="date" name="availableDates" th:min="${#temporals.format(#temporals.createToday(), 'yyyy-MM-dd')}"
+                                   class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300 text-sm">
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">Select multiple dates for doctor availability</p>
+                    </div>
+                    
+                    <button type="submit" 
+                            class="w-full bg-gradient-to-r from-blue-500 to-indigo-500 text-white py-3 px-6 rounded-lg font-semibold hover:from-blue-600 hover:to-indigo-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                            onclick="return validateAssignmentForm()">
+                        Assign Doctor
+                    </button>
+                </form>
+                
+                <script>
+                function validateAssignmentForm() {
+                    const doctorId = document.getElementById('doctorId').value;
+                    const roomId = document.getElementById('roomId').value;
+                    const timePeriod = document.getElementById('timePeriod').value;
+                    const dateInputs = document.querySelectorAll('input[name="availableDates"]');
+                    
+                    // Check if doctor is selected
+                    if (!doctorId) {
+                        alert('Please select a doctor.');
+                        return false;
+                    }
+                    
+                    // Check if room is selected
+                    if (!roomId) {
+                        alert('Please select a room.');
+                        return false;
+                    }
+                    
+                    // Check if time period is selected
+                    if (!timePeriod) {
+                        alert('Please select a time period.');
+                        return false;
+                    }
+                    
+                    // Check if at least one date is selected and validate dates
+                    let hasDate = false;
+                    let validDates = [];
+                    const today = new Date().toISOString().split('T')[0];
+                    
+                    dateInputs.forEach(input => {
+                        if (input.value && input.value.trim() !== '') {
+                            // Check if date is not in the past
+                            if (input.value >= today) {
+                                hasDate = true;
+                                validDates.push(input.value);
+                            } else {
+                                alert('Please select dates that are today or in the future.');
+                                return false;
+                            }
+                        }
+                    });
+                    
+                    if (!hasDate) {
+                        alert('Please select at least one date.');
+                        return false;
+                    }
+                    
+                    // Clear empty date inputs to avoid sending empty strings
+                    dateInputs.forEach(input => {
+                        if (!input.value || input.value.trim() === '') {
+                            input.disabled = true;
+                        }
+                    });
+                    
+                    return true;
+                }
+                </script>
+            </div>
+
+        </div>
+    </main>
+</body>
+</html>

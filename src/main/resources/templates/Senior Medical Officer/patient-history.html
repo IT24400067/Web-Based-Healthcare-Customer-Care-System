@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Medical History - MediFlow Connect</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'teal': {
+                            50: '#f0fdfa', 100: '#ccfbf1', 200: '#99f6e4', 300: '#5eead4', 400: '#2dd4bf',
+                            500: '#14b8a6', 600: '#0d9488', 700: '#0f766e', 800: '#115e59', 900: '#134e4a',
+                        },
+                        'cyan': {
+                            50: '#ecfeff', 100: '#cffafe', 200: '#a5f3fc', 300: '#67e8f9', 400: '#22d3ee',
+                            500: '#06b6d4', 600: '#0891b2', 700: '#0e7490', 800: '#155e75', 900: '#164e63',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #0d9488 0%, #0891b2 100%);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .priority-high {
+            border-left: 4px solid #ef4444;
+        }
+        .priority-medium {
+            border-left: 4px solid #f59e0b;
+        }
+        .priority-low {
+            border-left: 4px solid #10b981;
+        }
+        .priority-urgent {
+            border-left: 4px solid #dc2626;
+        }
+        .section-header {
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            backdrop-filter: blur(10px);
+        }
+        .report-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        }
+        .recommendation-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+        }
+    </style>
+</head>
+<body class="font-inter bg-gray-50 text-gray-800">
+    <!-- Header -->
+    <header class="bg-white shadow-md py-4 px-6 flex justify-between items-center">
+        <div class="flex items-center">
+            <img src="https://i.ibb.co/S6D712p/Arogya-Medical-Center-Logo.png" alt="Arogya Medical Center Logo" class="h-10 mr-3">
+            <h1 class="text-2xl font-bold text-teal-700">MediFlow Connect</h1>
+        </div>
+        <nav class="flex items-center space-x-4">
+            <a href="/senior-medical-officer.html" class="text-teal-600 hover:text-teal-800 font-medium px-4 py-2 rounded-md transition-colors duration-300">← Back to Dashboard</a>
+            <form th:action="@{/logout}" method="post" class="inline-block">
+                <button type="submit" class="bg-red-500 hover:bg-red-600 text-white font-medium px-4 py-2 rounded-md transition-colors duration-300">Logout</button>
+            </form>
+        </nav>
+    </header>
+
+    <main class="container mx-auto mt-8 p-4">
+        <!-- Patient Info Header -->
+        <div class="bg-gradient-to-r from-teal-500 to-cyan-500 text-white p-6 rounded-lg shadow-lg mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-3xl font-bold mb-2">Patient Medical History</h2>
+                    <p class="text-teal-100">Comprehensive medical reports and recommendations for <span id="patientNameHeader">Patient</span></p>
+                </div>
+                <div class="hidden md:block">
+                    <div class="text-right">
+                        <p class="text-teal-100 text-sm">Patient Email</p>
+                        <p class="text-white font-semibold" id="patientEmailHeader">-</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loadingState" class="text-center py-12">
+            <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
+            <p class="mt-4 text-gray-600">Loading patient history...</p>
+        </div>
+
+        <!-- Error State -->
+        <div id="errorState" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" style="display: none;" role="alert">
+            <span class="block sm:inline" id="errorMessage">Error loading patient history</span>
+        </div>
+
+        <!-- No Data State -->
+        <div id="noDataState" class="text-center py-12" style="display: none;">
+            <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+            </div>
+            <h3 class="text-xl font-semibold text-gray-700 mb-2">No Medical History Found</h3>
+            <p class="text-gray-500">This patient has no medical reports or recommendations yet.</p>
+        </div>
+
+        <!-- Content Area -->
+        <div id="contentArea" style="display: none;">
+            <!-- Medical Reports Section -->
+            <div class="bg-white rounded-lg shadow-lg mb-8">
+                <div class="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-4 rounded-t-lg">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center mr-3">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-semibold text-white">Medical Reports <span id="reportsCount" class="text-white text-opacity-80 text-sm font-normal">(0)</span></h3>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <select id="reportFilter" onchange="filterReports()" class="px-3 py-2 border border-white border-opacity-30 bg-white bg-opacity-10 text-white rounded-md text-sm focus:ring-2 focus:ring-white focus:border-white">
+                                <option value="all" class="text-gray-900">All Reports</option>
+                                <option value="urgent" class="text-gray-900">Urgent</option>
+                                <option value="high" class="text-gray-900">High Priority</option>
+                                <option value="medium" class="text-gray-900">Medium Priority</option>
+                                <option value="low" class="text-gray-900">Low Priority</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div id="reportsList" class="space-y-4">
+                        <!-- Reports will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Medical Recommendations Section -->
+            <div class="bg-white rounded-lg shadow-lg mb-8">
+                <div class="bg-gradient-to-r from-green-500 to-green-600 px-6 py-4 rounded-t-lg">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center mr-3">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-semibold text-white">Medical Recommendations <span id="recommendationsCount" class="text-white text-opacity-80 text-sm font-normal">(0)</span></h3>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <select id="recommendationFilter" onchange="filterRecommendations()" class="px-3 py-2 border border-white border-opacity-30 bg-white bg-opacity-10 text-white rounded-md text-sm focus:ring-2 focus:ring-white focus:border-white">
+                                <option value="all" class="text-gray-900">All Recommendations</option>
+                                <option value="urgent" class="text-gray-900">Urgent</option>
+                                <option value="high" class="text-gray-900">High Priority</option>
+                                <option value="medium" class="text-gray-900">Medium Priority</option>
+                                <option value="low" class="text-gray-900">Low Priority</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div id="recommendationsList" class="space-y-4">
+                        <!-- Recommendations will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Edit Modal -->
+    <div id="editModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" style="display: none;">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-medium text-gray-900" id="modalTitle">Edit Item</h3>
+                    <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                
+                <form id="editForm" class="space-y-4">
+                    <div id="editFields">
+                        <!-- Dynamic fields will be inserted here -->
+                    </div>
+                    
+                    <div class="flex items-center justify-end space-x-3 pt-4">
+                        <button type="button" onclick="closeEditModal()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors duration-200">
+                            Cancel
+                        </button>
+                        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200">
+                            Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentPatientEmail = '';
+        let allReports = [];
+        let allRecommendations = [];
+        let filteredReports = [];
+        let filteredRecommendations = [];
+
+        // Get patient email from URL parameters
+        function getUrlParameter(name) {
+            name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+            var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+            var results = regex.exec(location.search);
+            return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            currentPatientEmail = getUrlParameter('email');
+            if (!currentPatientEmail) {
+                showError('No patient email provided');
+                return;
+            }
+            
+            loadPatientHistory();
+        });
+
+        // Load patient history
+        function loadPatientHistory() {
+            showLoading();
+            
+            // Load patient info
+            fetch(`/api/patient/search?email=${encodeURIComponent(currentPatientEmail)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const patient = data.patient;
+                        document.getElementById('patientNameHeader').textContent = patient.fullName;
+                        document.getElementById('patientEmailHeader').textContent = patient.email;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading patient info:', error);
+                });
+
+            // Load medical reports and recommendations in parallel
+            Promise.all([
+                fetch(`/api/medical-reports/patient?email=${encodeURIComponent(currentPatientEmail)}`),
+                fetch(`/api/medical-recommendations/patient?email=${encodeURIComponent(currentPatientEmail)}`)
+            ])
+            .then(responses => Promise.all(responses.map(response => response.json())))
+            .then(([reportsData, recommendationsData]) => {
+                if (reportsData.success) {
+                    allReports = reportsData.reports || [];
+                    filteredReports = [...allReports];
+                } else {
+                    console.error('Error loading reports:', reportsData.message);
+                    allReports = [];
+                    filteredReports = [];
+                }
+
+                if (recommendationsData.success) {
+                    allRecommendations = recommendationsData.recommendations || [];
+                    filteredRecommendations = [...allRecommendations];
+                } else {
+                    console.error('Error loading recommendations:', recommendationsData.message);
+                    allRecommendations = [];
+                    filteredRecommendations = [];
+                }
+
+                displayReports();
+                displayRecommendations();
+                
+                if (allReports.length === 0 && allRecommendations.length === 0) {
+                    showNoData();
+                } else {
+                    showContent();
+                }
+            })
+            .catch(error => {
+                console.error('Error loading patient history:', error);
+                showError('Failed to load patient history');
+            });
+        }
+
+        // Show loading state
+        function showLoading() {
+            document.getElementById('loadingState').style.display = 'block';
+            document.getElementById('errorState').style.display = 'none';
+            document.getElementById('noDataState').style.display = 'none';
+            document.getElementById('contentArea').style.display = 'none';
+        }
+
+        // Show error state
+        function showError(message) {
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('errorState').style.display = 'block';
+            document.getElementById('errorMessage').textContent = message;
+            document.getElementById('noDataState').style.display = 'none';
+            document.getElementById('contentArea').style.display = 'none';
+        }
+
+        // Show no data state
+        function showNoData() {
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('errorState').style.display = 'none';
+            document.getElementById('noDataState').style.display = 'block';
+            document.getElementById('contentArea').style.display = 'none';
+        }
+
+        // Show content
+        function showContent() {
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('errorState').style.display = 'none';
+            document.getElementById('noDataState').style.display = 'none';
+            document.getElementById('contentArea').style.display = 'block';
+        }
+
+        // Display reports
+        function displayReports() {
+            const reportsList = document.getElementById('reportsList');
+            const reportsCount = document.getElementById('reportsCount');
+            
+            // Update count
+            reportsCount.textContent = `(${filteredReports.length})`;
+            
+            if (filteredReports.length === 0) {
+                reportsList.innerHTML = `
+                    <div class="text-center py-12 text-gray-500">
+                        <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                        </div>
+                        <p class="text-lg font-medium">No reports found</p>
+                        <p class="text-sm">No medical reports match the current filter criteria.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            reportsList.innerHTML = filteredReports.map(report => `
+                <div class="report-card border border-gray-200 rounded-xl p-6 card-hover priority-${report.priority} shadow-sm hover:shadow-md transition-all duration-300">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-3 mb-3">
+                                <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="text-lg font-semibold text-gray-900">${report.reportType}</h4>
+                                    <div class="flex items-center space-x-2 mt-1">
+                                        <span class="px-2 py-1 text-xs font-medium rounded-full ${getPriorityClass(report.priority)}">
+                                            ${report.priority.toUpperCase()}
+                                        </span>
+                                        <span class="text-sm text-gray-500">•</span>
+                                        <span class="text-sm text-gray-500">${formatDate(report.reportDate)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-lg border-l-4 border-blue-200">
+                                <p class="text-gray-700 whitespace-pre-wrap leading-relaxed">${report.reportDescription}</p>
+                            </div>
+                            <div class="mt-3 flex items-center justify-between">
+                                <div class="flex items-center text-sm text-gray-500">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    Created: ${formatDateTime(report.createdAt)}
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <button onclick="editReport(${report.reportId})" class="px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 text-sm font-medium rounded-md transition-colors duration-200 flex items-center">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                        </svg>
+                                        Edit
+                                    </button>
+                                    <button onclick="deleteReport(${report.reportId})" class="px-3 py-1 bg-red-100 hover:bg-red-200 text-red-700 text-sm font-medium rounded-md transition-colors duration-200 flex items-center">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                        </svg>
+                                        Delete
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Display recommendations
+        function displayRecommendations() {
+            const recommendationsList = document.getElementById('recommendationsList');
+            const recommendationsCount = document.getElementById('recommendationsCount');
+            
+            // Update count
+            recommendationsCount.textContent = `(${filteredRecommendations.length})`;
+            
+            if (filteredRecommendations.length === 0) {
+                recommendationsList.innerHTML = `
+                    <div class="text-center py-12 text-gray-500">
+                        <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                            </svg>
+                        </div>
+                        <p class="text-lg font-medium">No recommendations found</p>
+                        <p class="text-sm">No medical recommendations match the current filter criteria.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            recommendationsList.innerHTML = filteredRecommendations.map(recommendation => `
+                <div class="recommendation-card border border-gray-200 rounded-xl p-6 card-hover priority-${recommendation.priority} shadow-sm hover:shadow-md transition-all duration-300">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-3 mb-3">
+                                <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="text-lg font-semibold text-gray-900">${recommendation.recommendationType}</h4>
+                                    <div class="flex items-center space-x-2 mt-1">
+                                        <span class="px-2 py-1 text-xs font-medium rounded-full ${getPriorityClass(recommendation.priority)}">
+                                            ${recommendation.priority.toUpperCase()}
+                                        </span>
+                                        <span class="text-sm text-gray-500">•</span>
+                                        <span class="text-sm text-gray-500">Created: ${formatDateTime(recommendation.createdAt)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-lg border-l-4 border-green-200">
+                                <p class="text-gray-700 whitespace-pre-wrap leading-relaxed">${recommendation.recommendationDetails}</p>
+                            </div>
+                            ${recommendation.followUpDate ? `
+                                <div class="mt-3 flex items-center justify-between">
+                                    <div class="flex items-center text-sm text-gray-500">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                        </svg>
+                                        Follow-up Date: ${formatDate(recommendation.followUpDate)}
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <button onclick="editRecommendation(${recommendation.recommendationId})" class="px-3 py-1 bg-green-100 hover:bg-green-200 text-green-700 text-sm font-medium rounded-md transition-colors duration-200 flex items-center">
+                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                            </svg>
+                                            Edit
+                                        </button>
+                                        <button onclick="deleteRecommendation(${recommendation.recommendationId})" class="px-3 py-1 bg-red-100 hover:bg-red-200 text-red-700 text-sm font-medium rounded-md transition-colors duration-200 flex items-center">
+                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                            </svg>
+                                            Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            ` : `
+                                <div class="mt-3 flex items-center justify-end">
+                                    <div class="flex items-center space-x-2">
+                                        <button onclick="editRecommendation(${recommendation.recommendationId})" class="px-3 py-1 bg-green-100 hover:bg-green-200 text-green-700 text-sm font-medium rounded-md transition-colors duration-200 flex items-center">
+                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                            </svg>
+                                            Edit
+                                        </button>
+                                        <button onclick="deleteRecommendation(${recommendation.recommendationId})" class="px-3 py-1 bg-red-100 hover:bg-red-200 text-red-700 text-sm font-medium rounded-md transition-colors duration-200 flex items-center">
+                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                            </svg>
+                                            Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            `}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Filter reports
+        function filterReports() {
+            const filter = document.getElementById('reportFilter').value;
+            
+            if (filter === 'all') {
+                filteredReports = [...allReports];
+            } else {
+                filteredReports = allReports.filter(report => report.priority === filter);
+            }
+            
+            displayReports();
+        }
+
+        // Filter recommendations
+        function filterRecommendations() {
+            const filter = document.getElementById('recommendationFilter').value;
+            
+            if (filter === 'all') {
+                filteredRecommendations = [...allRecommendations];
+            } else {
+                filteredRecommendations = allRecommendations.filter(recommendation => recommendation.priority === filter);
+            }
+            
+            displayRecommendations();
+        }
+
+        // Get priority CSS class
+        function getPriorityClass(priority) {
+            switch (priority) {
+                case 'urgent':
+                    return 'bg-red-100 text-red-800';
+                case 'high':
+                    return 'bg-orange-100 text-orange-800';
+                case 'medium':
+                    return 'bg-yellow-100 text-yellow-800';
+                case 'low':
+                    return 'bg-green-100 text-green-800';
+                default:
+                    return 'bg-gray-100 text-gray-800';
+            }
+        }
+
+        // Format date
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        // Format date and time
+        function formatDateTime(dateTimeString) {
+            if (!dateTimeString) return '-';
+            const date = new Date(dateTimeString);
+            return date.toLocaleString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        // Edit Report Function
+        function editReport(reportId) {
+            const report = allReports.find(r => r.reportId === reportId);
+            if (!report) {
+                alert('Report not found');
+                return;
+            }
+
+            document.getElementById('modalTitle').textContent = 'Edit Medical Report';
+            document.getElementById('editFields').innerHTML = `
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Report Type</label>
+                    <input type="text" id="editReportType" value="${report.reportType}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Report Date</label>
+                    <input type="date" id="editReportDate" value="${report.reportDate}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Priority</label>
+                    <select id="editReportPriority" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="low" ${report.priority === 'low' ? 'selected' : ''}>Low</option>
+                        <option value="medium" ${report.priority === 'medium' ? 'selected' : ''}>Medium</option>
+                        <option value="high" ${report.priority === 'high' ? 'selected' : ''}>High</option>
+                        <option value="urgent" ${report.priority === 'urgent' ? 'selected' : ''}>Urgent</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <textarea id="editReportDescription" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none">${report.reportDescription}</textarea>
+                </div>
+            `;
+
+            // Update form submission
+            document.getElementById('editForm').onsubmit = function(e) {
+                e.preventDefault();
+                
+                const updateData = {
+                    reportId: reportId,
+                    reportType: document.getElementById('editReportType').value,
+                    reportDate: document.getElementById('editReportDate').value,
+                    reportDescription: document.getElementById('editReportDescription').value,
+                    priority: document.getElementById('editReportPriority').value
+                };
+
+                fetch('/api/medical-report/update', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(updateData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Medical report updated successfully!');
+                        closeEditModal();
+                        loadPatientHistory();
+                    } else {
+                        alert('Error updating medical report: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error updating medical report');
+                });
+            };
+
+            document.getElementById('editModal').style.display = 'block';
+        }
+
+        // Delete Report Function
+        function deleteReport(reportId) {
+            if (!confirm('Are you sure you want to delete this medical report? This action cannot be undone.')) {
+                return;
+            }
+
+            fetch(`/api/medical-report/delete?reportId=${reportId}`, {
+                method: 'DELETE'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Medical report deleted successfully!');
+                    loadPatientHistory(); // Reload the data
+                } else {
+                    alert('Error deleting medical report: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error deleting medical report');
+            });
+        }
+
+        // Edit Recommendation Function
+        function editRecommendation(recommendationId) {
+            const recommendation = allRecommendations.find(r => r.recommendationId === recommendationId);
+            if (!recommendation) {
+                alert('Recommendation not found');
+                return;
+            }
+
+            document.getElementById('modalTitle').textContent = 'Edit Medical Recommendation';
+            document.getElementById('editFields').innerHTML = `
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Recommendation Type</label>
+                    <input type="text" id="editRecommendationType" value="${recommendation.recommendationType}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Priority</label>
+                    <select id="editRecommendationPriority" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="low" ${recommendation.priority === 'low' ? 'selected' : ''}>Low</option>
+                        <option value="medium" ${recommendation.priority === 'medium' ? 'selected' : ''}>Medium</option>
+                        <option value="high" ${recommendation.priority === 'high' ? 'selected' : ''}>High</option>
+                        <option value="urgent" ${recommendation.priority === 'urgent' ? 'selected' : ''}>Urgent</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Follow-up Date</label>
+                    <input type="date" id="editFollowUpDate" value="${recommendation.followUpDate || ''}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Details</label>
+                    <textarea id="editRecommendationDetails" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none">${recommendation.recommendationDetails}</textarea>
+                </div>
+            `;
+
+            // Update form submission
+            document.getElementById('editForm').onsubmit = function(e) {
+                e.preventDefault();
+                
+                const updateData = {
+                    recommendationId: recommendationId,
+                    recommendationType: document.getElementById('editRecommendationType').value,
+                    recommendationDetails: document.getElementById('editRecommendationDetails').value,
+                    priority: document.getElementById('editRecommendationPriority').value,
+                    followUpDate: document.getElementById('editFollowUpDate').value || null
+                };
+
+                fetch('/api/medical-recommendation/update', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(updateData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Medical recommendation updated successfully!');
+                        closeEditModal();
+                        loadPatientHistory();
+                    } else {
+                        alert('Error updating medical recommendation: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error updating medical recommendation');
+                });
+            };
+
+            document.getElementById('editModal').style.display = 'block';
+        }
+
+        // Close Edit Modal Function
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        // Delete Recommendation Function
+        function deleteRecommendation(recommendationId) {
+            if (!confirm('Are you sure you want to delete this medical recommendation? This action cannot be undone.')) {
+                return;
+            }
+
+            fetch(`/api/medical-recommendation/delete?recommendationId=${recommendationId}`, {
+                method: 'DELETE'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Medical recommendation deleted successfully!');
+                    loadPatientHistory(); // Reload the data
+                } else {
+                    alert('Error deleting medical recommendation: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error deleting medical recommendation');
+            });
+        }
+    </script>
+</body>
+</html>

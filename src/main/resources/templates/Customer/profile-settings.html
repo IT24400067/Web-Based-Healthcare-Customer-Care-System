@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile Settings - MediFlow Connect</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'teal': {
+                            50: '#f0fdfa', 100: '#ccfbf1', 200: '#99f6e4', 300: '#5eead4', 400: '#2dd4bf',
+                            500: '#14b8a6', 600: '#0d9488', 700: '#0f766e', 800: '#115e59', 900: '#134e4a',
+                        },
+                        'cyan': {
+                            50: '#ecfeff', 100: '#cffafe', 200: '#a5f3fc', 300: '#67e8f9', 400: '#22d3ee',
+                            500: '#06b6d4', 600: '#0891b2', 700: '#0e7490', 800: '#155e75', 900: '#164e63',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #0d9488 0%, #0891b2 100%);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .form-input {
+            transition: all 0.3s ease;
+        }
+        .form-input:focus {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(14, 184, 166, 0.15);
+        }
+    </style>
+</head>
+<body class="font-inter bg-gray-50 text-gray-800">
+    <!-- Header -->
+    <header class="bg-white shadow-md py-4 px-6 flex justify-between items-center sticky top-0 z-50">
+        <div class="flex items-center">
+            <img src="https://i.ibb.co/S6D712p/Arogya-Medical-Center-Logo.png" alt="Arogya Medical Center Logo" class="h-10 mr-3">
+            <h1 class="text-2xl font-bold text-teal-700">MediFlow Connect</h1>
+        </div>
+        <nav class="flex items-center space-x-4">
+            <a th:href="@{/customer.html(email=${customer.email})}" class="text-teal-600 hover:text-teal-800 font-medium px-4 py-2 rounded-md transition-colors duration-300">Dashboard</a>
+            
+            <!-- Profile Dropdown -->
+            <div class="relative">
+                <button onclick="toggleProfile()" class="flex items-center space-x-2 text-gray-700 hover:text-teal-600 transition-all duration-300 group">
+                    <div class="relative">
+                        <div class="w-10 h-10 bg-gradient-to-br from-teal-400 via-teal-500 to-cyan-600 rounded-full flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                        </div>
+                        <!-- Online status indicator -->
+                        <div class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-400 border-2 border-white rounded-full"></div>
+                    </div>
+                    <span class="hidden md:block font-medium" th:text="${customer.fullName != null ? customer.fullName : 'User'}">User</span>
+                    <svg class="w-4 h-4 transition-transform duration-300 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                <div id="profileDropdown" class="hidden absolute right-0 mt-3 w-48 bg-white rounded-xl shadow-xl border border-gray-200 py-2 z-50 overflow-hidden">
+                    <div class="px-4 py-3 bg-gradient-to-r from-teal-50 to-cyan-50 border-b border-gray-100">
+                        <p class="text-sm font-semibold text-gray-900" th:text="${customer.fullName != null ? customer.fullName : 'User'}">User</p>
+                        <p class="text-xs text-gray-600" th:text="${customer.email}">user@example.com</p>
+                    </div>
+                    <div class="py-1">
+                        <a th:href="@{/profile-settings.html(email=${customer.email})}" class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200">
+                            <svg class="w-4 h-4 mr-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                            Profile Settings
+                        </a>
+                    </div>
+                    <div class="border-t border-gray-100">
+                        <form th:action="@{/logout}" method="post" class="block">
+                            <button type="submit" class="flex items-center w-full px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors duration-200">
+                                <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                                </svg>
+                                Sign Out
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto mt-8 p-4 max-w-4xl">
+        <!-- Page Header -->
+        <div class="bg-gradient-to-r from-teal-500 to-cyan-500 text-white p-6 rounded-lg shadow-lg mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-3xl font-bold mb-2">Profile Settings</h2>
+                    <p class="text-teal-100">Manage your personal information and account settings</p>
+                </div>
+                <div class="hidden md:block">
+                    <div class="text-right">
+                        <p class="text-teal-100 text-sm">Account Status</p>
+                        <p class="text-white font-semibold">Active</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Success/Error Messages -->
+        <div th:if="${param.success}" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-6" role="alert">
+            <span class="block sm:inline" th:if="${param.success[0] == 'profile_updated'}">✅ Profile updated successfully!</span>
+            <span class="block sm:inline" th:if="${param.success[0] == 'password_updated'}">✅ Password changed successfully!</span>
+        </div>
+
+        <div th:if="${param.error}" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6" role="alert">
+            <span class="block sm:inline" th:if="${param.error[0] == 'valid_email_required'}">❌ Valid email is required</span>
+            <span class="block sm:inline" th:if="${param.error[0] == 'first_name_required'}">❌ First name is required</span>
+            <span class="block sm:inline" th:if="${param.error[0] == 'last_name_required'}">❌ Last name is required</span>
+            <span class="block sm:inline" th:if="${param.error[0] == 'phone_number_required'}">❌ Phone number is required</span>
+            <span class="block sm:inline" th:if="${param.error[0] == 'current_password_required'}">❌ Current password is required</span>
+            <span class="block sm:inline" th:if="${param.error[0] == 'new_password_min_length'}">❌ New password must be at least 8 characters</span>
+            <span class="block sm:inline" th:if="${param.error[0] == 'passwords_do_not_match'}">❌ Passwords do not match</span>
+            <span class="block sm:inline" th:if="${param.error[0] == 'current_password_incorrect'}">❌ Current password is incorrect</span>
+            <span class="block sm:inline" th:if="${param.error[0] == 'user_not_found'}">❌ User not found</span>
+            <span class="block sm:inline" th:if="${param.error[0] == 'update_failed'}">❌ Profile update failed. Please try again.</span>
+            <span class="block sm:inline" th:if="${param.error[0] == 'password_change_failed'}">❌ Password change failed. Please try again.</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Personal Information -->
+            <div class="bg-white rounded-xl shadow-lg p-8 card-hover border border-gray-100">
+                <div class="flex items-center mb-6">
+                    <div class="w-12 h-12 bg-gradient-to-r from-teal-500 to-cyan-500 rounded-full flex items-center justify-center mr-4">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900">Personal Information</h3>
+                </div>
+                
+                <form th:action="@{/profile-settings/update}" method="post" class="space-y-6">
+                    <input type="hidden" name="email" th:value="${customer.email}">
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="firstName" class="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+                            <input type="text" id="firstName" name="firstName" th:value="${customer.firstName}" 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent form-input" 
+                                   placeholder="Enter your first name" required>
+                        </div>
+                        <div>
+                            <label for="lastName" class="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+                            <input type="text" id="lastName" name="lastName" th:value="${customer.lastName}" 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent form-input" 
+                                   placeholder="Enter your last name" required>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                        <input type="email" id="email" th:value="${customer.email}" 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed form-input" 
+                               placeholder="your.email@example.com" disabled>
+                        <p class="text-sm text-gray-500 mt-1">Email cannot be changed</p>
+                    </div>
+                    
+                    <div>
+                        <label for="phoneNumber" class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                        <input type="tel" id="phoneNumber" name="phoneNumber" th:value="${customer.phoneNumber}" 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent form-input" 
+                               placeholder="Enter your phone number" required>
+                    </div>
+                    
+                    <button type="submit" 
+                            class="w-full bg-gradient-to-r from-teal-500 to-cyan-500 text-white py-3 px-6 rounded-lg font-semibold hover:from-teal-600 hover:to-cyan-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                        Update Profile
+                    </button>
+                </form>
+            </div>
+
+            <!-- Change Password -->
+            <div class="bg-white rounded-xl shadow-lg p-8 card-hover border border-gray-100">
+                <div class="flex items-center mb-6">
+                    <div class="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center mr-4">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900">Change Password</h3>
+                </div>
+                
+                <form th:action="@{/profile-settings/change-password}" method="post" class="space-y-6">
+                    <input type="hidden" name="email" th:value="${customer.email}">
+                    
+                    <div>
+                        <label for="currentPassword" class="block text-sm font-medium text-gray-700 mb-2">Current Password</label>
+                        <input type="password" id="currentPassword" name="currentPassword" 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent form-input" 
+                               placeholder="Enter your current password" required>
+                    </div>
+                    
+                    <div>
+                        <label for="newPassword" class="block text-sm font-medium text-gray-700 mb-2">New Password</label>
+                        <input type="password" id="newPassword" name="newPassword" 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent form-input" 
+                               placeholder="Enter your new password" required minlength="8">
+                        <p class="text-sm text-gray-500 mt-1">Password must be at least 8 characters long</p>
+                    </div>
+                    
+                    <div>
+                        <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-2">Confirm New Password</label>
+                        <input type="password" id="confirmPassword" name="confirmPassword" 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent form-input" 
+                               placeholder="Confirm your new password" required minlength="8">
+                    </div>
+                    
+                    <button type="submit" 
+                            class="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white py-3 px-6 rounded-lg font-semibold hover:from-orange-600 hover:to-red-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                        Change Password
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Account Information -->
+        <div class="mt-8 bg-white rounded-xl shadow-lg p-8 card-hover border border-gray-100">
+            <div class="flex items-center mb-6">
+                <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center mr-4">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900">Account Information</h3>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="text-center p-4 bg-gray-50 rounded-lg">
+                    <p class="text-sm text-gray-600">Account Type</p>
+                    <p class="text-lg font-semibold text-gray-900" th:text="${customer.role}">CUSTOMER</p>
+                </div>
+                <div class="text-center p-4 bg-gray-50 rounded-lg">
+                    <p class="text-sm text-gray-600">Member Since</p>
+                    <p class="text-lg font-semibold text-gray-900">January 2025</p>
+                </div>
+                <div class="text-center p-4 bg-gray-50 rounded-lg">
+                    <p class="text-sm text-gray-600">Last Updated</p>
+                    <p class="text-lg font-semibold text-gray-900">Today</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-gray-300 py-6 mt-12">
+        <div class="container mx-auto text-center">
+            <p>&copy; 2025 Arogya Medical Center. All rights reserved.</p>
+            <p class="text-sm mt-2">MediFlow Connect Portal</p>
+        </div>
+    </footer>
+
+    <script>
+        function toggleProfile() {
+            const dropdown = document.getElementById('profileDropdown');
+            dropdown.classList.toggle('hidden');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const profileDropdown = document.getElementById('profileDropdown');
+            const profileButton = event.target.closest('[onclick="toggleProfile()"]');
+            
+            if (!profileButton && !profileDropdown.contains(event.target)) {
+                profileDropdown.classList.add('hidden');
+            }
+        });
+
+        // Password confirmation validation
+        document.getElementById('confirmPassword').addEventListener('input', function() {
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = this.value;
+            
+            if (newPassword !== confirmPassword) {
+                this.setCustomValidity('Passwords do not match');
+            } else {
+                this.setCustomValidity('');
+            }
+        });
+
+        // Form validation enhancement
+        document.addEventListener('DOMContentLoaded', function() {
+            const forms = document.querySelectorAll('form');
+            forms.forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    const submitButton = form.querySelector('button[type="submit"]');
+                    submitButton.disabled = true;
+                    submitButton.textContent = 'Processing...';
+                    
+                    // Re-enable after 3 seconds in case of error
+                    setTimeout(() => {
+                        submitButton.disabled = false;
+                        submitButton.textContent = submitButton.textContent.includes('Profile') ? 'Update Profile' : 'Change Password';
+                    }, 3000);
+                });
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notification Debug Tool</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-6xl mx-auto">
+        <h1 class="text-3xl font-bold text-gray-800 mb-8">🔍 Notification System Debug Tool</h1>
+        
+        <!-- Status Check -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">📊 System Status</h2>
+            <div id="statusCheck" class="space-y-2">
+                <div class="flex items-center">
+                    <div id="appStatus" class="w-4 h-4 bg-gray-400 rounded-full mr-3"></div>
+                    <span>Application Status: <span id="appStatusText">Checking...</span></span>
+                </div>
+                <div class="flex items-center">
+                    <div id="dbStatus" class="w-4 h-4 bg-gray-400 rounded-full mr-3"></div>
+                    <span>Database Status: <span id="dbStatusText">Checking...</span></span>
+                </div>
+                <div class="flex items-center">
+                    <div id="apiStatus" class="w-4 h-4 bg-gray-400 rounded-full mr-3"></div>
+                    <span>API Status: <span id="apiStatusText">Checking...</span></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test Controls -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">🧪 Test Controls</h2>
+            
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">User Email:</label>
+                <input type="email" id="userEmail" value="customer@example.com" 
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                <button onclick="testAppStatus()" class="bg-gray-500 text-white px-3 py-2 rounded text-sm hover:bg-gray-600">
+                    Check App
+                </button>
+                <button onclick="testGetAllNotifications()" class="bg-indigo-500 text-white px-3 py-2 rounded text-sm hover:bg-indigo-600">
+                    Get All Notifications
+                </button>
+                <button onclick="testGetActiveNotifications()" class="bg-blue-500 text-white px-3 py-2 rounded text-sm hover:bg-blue-600">
+                    Get Active Notifications
+                </button>
+                <button onclick="testGetCount()" class="bg-green-500 text-white px-3 py-2 rounded text-sm hover:bg-green-600">
+                    Get Count
+                </button>
+                <button onclick="testCreateNotification()" class="bg-purple-500 text-white px-3 py-2 rounded text-sm hover:bg-purple-600">
+                    Create Test Notification
+                </button>
+                <button onclick="testDirectDatabase()" class="bg-red-500 text-white px-3 py-2 rounded text-sm hover:bg-red-600">
+                    Test Direct DB
+                </button>
+                <button onclick="clearResults()" class="bg-yellow-500 text-white px-3 py-2 rounded text-sm hover:bg-yellow-600">
+                    Clear Results
+                </button>
+                <button onclick="runFullDiagnostic()" class="bg-teal-500 text-white px-3 py-2 rounded text-sm hover:bg-teal-600">
+                    Full Diagnostic
+                </button>
+            </div>
+        </div>
+        
+        <!-- Results -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">📋 Test Results</h2>
+            <pre id="results" class="bg-gray-100 p-4 rounded text-sm overflow-auto max-h-96 whitespace-pre-wrap">
+Click "Full Diagnostic" to run all tests...
+            </pre>
+        </div>
+
+        <!-- Quick Fixes -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold mb-4">🔧 Quick Fixes</h2>
+            <div class="space-y-4">
+                <div class="border-l-4 border-blue-500 pl-4">
+                    <h3 class="font-semibold">1. Create Database Table</h3>
+                    <p class="text-sm text-gray-600">Run this SQL in your database:</p>
+                    <code class="block bg-gray-100 p-2 rounded text-xs mt-2">
+CREATE TABLE notifications (
+    notification_id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    user_email NVARCHAR(255) NOT NULL,
+    title NVARCHAR(255) NOT NULL,
+    message NVARCHAR(MAX) NOT NULL,
+    type NVARCHAR(50) NOT NULL,
+    priority NVARCHAR(20) NOT NULL,
+    is_read BIT NOT NULL DEFAULT 0,
+    related_entity_id BIGINT,
+    related_entity_type NVARCHAR(50),
+    created_at DATETIME2 NOT NULL DEFAULT GETDATE(),
+    expires_at DATETIME2
+);
+                    </code>
+                </div>
+                
+                <div class="border-l-4 border-green-500 pl-4">
+                    <h3 class="font-semibold">2. Insert Test Data</h3>
+                    <p class="text-sm text-gray-600">Run this SQL to create test notifications:</p>
+                    <code class="block bg-gray-100 p-2 rounded text-xs mt-2">
+INSERT INTO notifications (user_email, title, message, type, priority, is_read, created_at)
+VALUES 
+('customer@example.com', 'Test Notification 1', 'This is a test notification', 'SYSTEM', 'MEDIUM', 0, GETDATE()),
+('customer@example.com', 'Appointment Reminder', 'Your appointment is tomorrow', 'APPOINTMENT', 'HIGH', 0, GETDATE()),
+('customer@example.com', 'Medical Report Ready', 'Your lab results are available', 'MEDICAL_REPORT', 'HIGH', 0, GETDATE());
+                    </code>
+                </div>
+                
+                <div class="border-l-4 border-purple-500 pl-4">
+                    <h3 class="font-semibold">3. Check Application Logs</h3>
+                    <p class="text-sm text-gray-600">Look for these messages in your console:</p>
+                    <ul class="text-xs text-gray-600 mt-2 list-disc list-inside">
+                        <li>"Registered notification observer: LoggingNotificationObserver"</li>
+                        <li>"Registered notification observer: EmailNotificationObserver"</li>
+                        <li>"Registered notification observer: WebSocketNotificationObserver"</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let results = '';
+        
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            results += `[${timestamp}] ${message}\n`;
+            document.getElementById('results').textContent = results;
+        }
+        
+        function clearResults() {
+            results = '';
+            document.getElementById('results').textContent = 'Results cleared...';
+        }
+        
+        function getUserEmail() {
+            return document.getElementById('userEmail').value;
+        }
+        
+        function updateStatus(elementId, status, text) {
+            const element = document.getElementById(elementId);
+            const textElement = document.getElementById(elementId + 'Text');
+            
+            element.className = `w-4 h-4 rounded-full mr-3 ${status === 'success' ? 'bg-green-500' : status === 'error' ? 'bg-red-500' : 'bg-yellow-500'}`;
+            textElement.textContent = text;
+        }
+        
+        async function testAppStatus() {
+            log('🔍 Testing application status...');
+            try {
+                const response = await fetch('/api/notifications/test', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: 'userEmail=test@example.com&title=Status Test&message=Testing app status&type=SYSTEM&priority=LOW'
+                });
+                
+                if (response.ok) {
+                    updateStatus('appStatus', 'success', 'Running');
+                    log('✅ Application is running and responding');
+                } else {
+                    updateStatus('appStatus', 'error', 'Error');
+                    log(`❌ Application error: ${response.status} ${response.statusText}`);
+                }
+            } catch (error) {
+                updateStatus('appStatus', 'error', 'Not Running');
+                log(`❌ Application not accessible: ${error.message}`);
+            }
+        }
+        
+        async function testGetAllNotifications() {
+            const userEmail = getUserEmail();
+            log(`🔍 Getting all notifications for: ${userEmail}`);
+            
+            try {
+                const response = await fetch(`/api/notifications/user/${userEmail}/debug`);
+                log(`📡 API Response Status: ${response.status}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                log(`📋 Found ${data.length} notifications:`);
+                data.forEach((notification, index) => {
+                    log(`  ${index + 1}. ${notification.title} (${notification.type}, ${notification.priority}) - Read: ${notification.isRead}`);
+                });
+                
+                if (data.length === 0) {
+                    log('⚠️ No notifications found. Check database or create test notifications.');
+                }
+            } catch (error) {
+                log(`❌ Error getting notifications: ${error.message}`);
+            }
+        }
+        
+        async function testGetActiveNotifications() {
+            const userEmail = getUserEmail();
+            log(`🔍 Getting active notifications for: ${userEmail}`);
+            
+            try {
+                const response = await fetch(`/api/notifications/user/${userEmail}`);
+                log(`📡 API Response Status: ${response.status}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                log(`📋 Found ${data.length} active notifications:`);
+                data.forEach((notification, index) => {
+                    log(`  ${index + 1}. ${notification.title} (${notification.type}, ${notification.priority}) - Read: ${notification.isRead}`);
+                });
+                
+                if (data.length === 0) {
+                    log('⚠️ No active notifications found. They might be expired or filtered out.');
+                }
+            } catch (error) {
+                log(`❌ Error getting active notifications: ${error.message}`);
+            }
+        }
+        
+        async function testGetCount() {
+            const userEmail = getUserEmail();
+            log(`🔍 Getting notification count for: ${userEmail}`);
+            
+            try {
+                const response = await fetch(`/api/notifications/user/${userEmail}/count`);
+                log(`📡 API Response Status: ${response.status}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const count = await response.json();
+                log(`📊 Unread notification count: ${count}`);
+                
+                if (count === 0) {
+                    log('⚠️ No unread notifications found.');
+                }
+            } catch (error) {
+                log(`❌ Error getting count: ${error.message}`);
+            }
+        }
+        
+        async function testCreateNotification() {
+            const userEmail = getUserEmail();
+            log(`🔍 Creating test notification for: ${userEmail}`);
+            
+            try {
+                const response = await fetch('/api/notifications/test', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `userEmail=${userEmail}&title=Debug Test&message=This is a test notification created from debug tool&type=SYSTEM&priority=MEDIUM`
+                });
+                
+                log(`📡 API Response Status: ${response.status}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                log(`✅ Created notification with ID: ${data.notificationId}`);
+                log(`   Title: ${data.title}`);
+                log(`   Message: ${data.message}`);
+            } catch (error) {
+                log(`❌ Error creating notification: ${error.message}`);
+            }
+        }
+        
+        async function testDirectDatabase() {
+            log('🔍 Testing direct database access...');
+            log('⚠️ This would require a direct database connection.');
+            log('💡 Instead, use the API endpoints above to test database access.');
+        }
+        
+        async function runFullDiagnostic() {
+            log('🚀 Running full diagnostic...');
+            log('='.repeat(50));
+            
+            await testAppStatus();
+            log('');
+            await testGetAllNotifications();
+            log('');
+            await testGetActiveNotifications();
+            log('');
+            await testGetCount();
+            log('');
+            await testCreateNotification();
+            log('');
+            
+            log('='.repeat(50));
+            log('🏁 Diagnostic complete!');
+            log('');
+            log('💡 Next steps:');
+            log('1. If no notifications found, run the SQL commands in Quick Fixes');
+            log('2. If API errors, check application logs');
+            log('3. If notifications exist but UI not showing, check browser console');
+            log('4. Test the customer dashboard: http://localhost:8080/customer.html');
+        }
+        
+        // Auto-run diagnostic on page load
+        window.addEventListener('load', function() {
+            setTimeout(runFullDiagnostic, 1000);
+        });
+    </script>
+</body>
+</html>
+

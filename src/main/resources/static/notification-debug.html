@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notification Debug Page</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold text-gray-800 mb-8">Notification System Debug</h1>
+        
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">Test API Endpoints</h2>
+            
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">User Email:</label>
+                <input type="email" id="userEmail" value="customer@example.com" 
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            
+            <div class="space-y-2">
+                <button onclick="testGetNotifications()" 
+                        class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                    Get Active Notifications
+                </button>
+                <button onclick="testGetAllNotifications()" 
+                        class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600">
+                    Get All Notifications (Debug)
+                </button>
+                <button onclick="testGetCount()" 
+                        class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                    Get Count
+                </button>
+                <button onclick="testCreateNotification()" 
+                        class="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600">
+                    Create Test Notification
+                </button>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold mb-4">API Response</h2>
+            <pre id="response" class="bg-gray-100 p-4 rounded text-sm overflow-auto max-h-96">
+                Click a button above to test the API...
+            </pre>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-md p-6 mt-6">
+            <h2 class="text-xl font-semibold mb-4">Debug Steps</h2>
+            <ol class="list-decimal list-inside space-y-2 text-sm">
+                <li>Check if the application is running on <code class="bg-gray-200 px-2 py-1 rounded">http://localhost:8080</code></li>
+                <li>Verify the notifications table exists in your database</li>
+                <li>Check if there are notifications with the correct user email</li>
+                <li>Test the API endpoints using the buttons above</li>
+                <li>Check browser console for any JavaScript errors</li>
+                <li>Verify CORS is working (check Network tab in DevTools)</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        function logResponse(data) {
+            document.getElementById('response').textContent = JSON.stringify(data, null, 2);
+        }
+        
+        function logError(error) {
+            document.getElementById('response').textContent = `Error: ${error.message}\n\nStack: ${error.stack}`;
+        }
+        
+        function getUserEmail() {
+            return document.getElementById('userEmail').value;
+        }
+        
+        async function testGetNotifications() {
+            const userEmail = getUserEmail();
+            console.log('Testing get notifications for:', userEmail);
+            
+            try {
+                const response = await fetch(`/api/notifications/user/${userEmail}`);
+                console.log('Response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('Notifications data:', data);
+                logResponse(data);
+            } catch (error) {
+                console.error('Error:', error);
+                logError(error);
+            }
+        }
+        
+        async function testGetAllNotifications() {
+            const userEmail = getUserEmail();
+            console.log('Testing get all notifications (debug) for:', userEmail);
+            
+            try {
+                const response = await fetch(`/api/notifications/user/${userEmail}/debug`);
+                console.log('Response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('All notifications data:', data);
+                logResponse(data);
+            } catch (error) {
+                console.error('Error:', error);
+                logError(error);
+            }
+        }
+        
+        async function testGetCount() {
+            const userEmail = getUserEmail();
+            console.log('Testing get count for:', userEmail);
+            
+            try {
+                const response = await fetch(`/api/notifications/user/${userEmail}/count`);
+                console.log('Response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('Count data:', data);
+                logResponse(data);
+            } catch (error) {
+                console.error('Error:', error);
+                logError(error);
+            }
+        }
+        
+        async function testCreateNotification() {
+            const userEmail = getUserEmail();
+            console.log('Testing create notification for:', userEmail);
+            
+            try {
+                const response = await fetch('/api/notifications/test', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `userEmail=${userEmail}&title=Debug Test&message=This is a test notification created from debug page&type=SYSTEM&priority=MEDIUM`
+                });
+                
+                console.log('Response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('Created notification:', data);
+                logResponse(data);
+            } catch (error) {
+                console.error('Error:', error);
+                logError(error);
+            }
+        }
+    </script>
+</body>
+</html>

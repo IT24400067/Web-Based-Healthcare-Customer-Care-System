@@ -1,0 +1,1398 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Customer Dashboard - MediFlow Connect</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'teal': {
+                            50: '#f0fdfa', 100: '#ccfbf1', 200: '#99f6e4', 300: '#5eead4', 400: '#2dd4bf',
+                            500: '#14b8a6', 600: '#0d9488', 700: '#0f766e', 800: '#115e59', 900: '#134e4a',
+                        },
+                        'cyan': {
+                            50: '#ecfeff', 100: '#cffafe', 200: '#a5f3fc', 300: '#67e8f9', 400: '#22d3ee',
+                            500: '#06b6d4', 600: '#0891b2', 700: '#0e7490', 800: '#155e75', 900: '#164e63',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #0d9488 0%, #0891b2 100%);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="font-inter bg-gray-50 text-gray-800">
+    <!-- Header -->
+    <header class="bg-white shadow-md py-4 px-6 flex justify-between items-center sticky top-0 z-50">
+        <div class="flex items-center">
+            <img src="https://i.ibb.co/S6D712p/Arogya-Medical-Center-Logo.png" alt="Arogya Medical Center Logo" class="h-10 mr-3">
+            <h1 class="text-2xl font-bold text-teal-700">MediFlow Connect</h1>
+        </div>
+        <nav class="flex items-center space-x-4">
+            <a href="/" class="text-teal-600 hover:text-teal-800 font-medium px-4 py-2 rounded-md transition-colors duration-300">Home</a>
+            
+            <!-- Notifications -->
+            <div class="relative">
+                <button onclick="toggleNotifications()" class="relative p-2 text-gray-600 hover:text-teal-600 transition-colors duration-300">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                    </svg>
+                    <span id="notificationBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center hidden">0</span>
+                </button>
+                <div id="notificationsDropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50">
+                    <div class="px-4 py-2 border-b border-gray-100 flex justify-between items-center">
+                        <h3 class="font-semibold text-gray-900">Notifications</h3>
+                        <button onclick="markAllAsRead()" class="text-xs text-teal-600 hover:text-teal-800 font-medium">Mark all read</button>
+                    </div>
+                    <div id="notificationsList" class="max-h-64 overflow-y-auto">
+                        <!-- Notifications will be loaded dynamically -->
+                        <div class="px-4 py-8 text-center text-gray-500">
+                            <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-teal-500 mx-auto"></div>
+                            <p class="mt-2 text-sm">Loading notifications...</p>
+                        </div>
+                    </div>
+                    <div class="px-4 py-2 border-t border-gray-100">
+                        <a href="#" class="text-sm text-teal-600 hover:text-teal-800 font-medium">View all notifications</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Dropdown -->
+            <div class="relative">
+                <button onclick="toggleProfile()" class="flex items-center space-x-2 text-gray-700 hover:text-teal-600 transition-all duration-300 group">
+                    <div class="relative">
+                        <div class="w-10 h-10 bg-gradient-to-br from-teal-400 via-teal-500 to-cyan-600 rounded-full flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                        </div>
+                        <!-- Online status indicator -->
+                        <div class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-400 border-2 border-white rounded-full"></div>
+                    </div>
+                    <span class="hidden md:block font-medium" th:text="${customer.fullName != null ? customer.fullName : 'User'}">User</span>
+                    <svg class="w-4 h-4 transition-transform duration-300 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                <div id="profileDropdown" class="hidden absolute right-0 mt-3 w-48 bg-white rounded-xl shadow-xl border border-gray-200 py-2 z-50 overflow-hidden">
+                    <div class="px-4 py-3 bg-gradient-to-r from-teal-50 to-cyan-50 border-b border-gray-100">
+                        <p class="text-sm font-semibold text-gray-900" th:text="${customer.fullName != null ? customer.fullName : 'User'}">User</p>
+                        <p class="text-xs text-gray-600" th:text="${customer.email}">user@example.com</p>
+                    </div>
+                    <div class="py-1">
+                        <a th:href="@{/profile-settings.html(email=${customer.email})}" class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200">
+                            <svg class="w-4 h-4 mr-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                            Profile Settings
+                        </a>
+                    </div>
+                    <div class="border-t border-gray-100">
+                        <form th:action="@{/logout}" method="post" class="block">
+                            <button type="submit" class="flex items-center w-full px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors duration-200">
+                                <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                                </svg>
+                                Sign Out
+                            </button>
+        </form>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto mt-8 p-4">
+        <!-- Hidden field to store customer email for JavaScript -->
+        <input type="hidden" id="customerEmail" th:value="${customer.email}" />
+        
+        <!-- Welcome Section -->
+        <div class="bg-gradient-to-r from-teal-500 to-cyan-500 text-white p-6 rounded-lg shadow-lg mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+            <h2 class="text-3xl font-bold mb-2">Welcome, <span th:text="${customer.fullName}">Customer</span>!</h2>
+            <p class="text-teal-100">Your personalized dashboard for managing appointments, feedback, and support.</p>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Success/Error Messages -->
+        <div th:if="${param.success}" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
+            <span class="block sm:inline" th:if="${param.success[0] == 'login_successful'}">✅ Login successful! Welcome to your dashboard.</span>
+            <span class="block sm:inline" th:if="${param.success[0] == 'appointment_booked'}">✅ Appointment booked successfully!</span>
+            <span class="block sm:inline" th:if="${param.success[0] == 'feedback_submitted'}">✅ Feedback submitted successfully!</span>
+            <span class="block sm:inline" th:if="${param.success[0] == 'ticket_created'}">✅ Ticket created successfully!</span>
+                </div>
+
+        <div th:if="${param.error}" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+            <span class="block sm:inline" th:text="${param.error[0]}">Error message</span>
+                </div>
+
+        <!-- Main Dashboard Layout -->
+        <div class="flex flex-col lg:flex-row gap-8">
+            <!-- Profile Sidebar Strip -->
+            <div class="lg:w-80 bg-gradient-to-b from-teal-500 to-cyan-600 rounded-xl shadow-xl p-6 text-white">
+                <div class="flex items-center mb-8">
+                    <div class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center mr-3">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold">My Profile</h3>
+                </div>
+                
+                <!-- Profile Info -->
+                <div class="mb-8">
+                    <div class="mb-6">
+                        <div>
+                            <p class="font-semibold text-lg" th:text="${customer.fullName != null ? customer.fullName : 'User'}">User</p>
+                            <p class="text-sm text-teal-100" th:text="${customer.email}">user@example.com</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="space-y-3">
+                    <button onclick="loadBookedAppointments()" class="w-full flex items-center bg-white bg-opacity-10 hover:bg-opacity-20 text-white py-3 px-4 rounded-lg transition-all duration-300 border border-white border-opacity-20 hover:border-opacity-40">
+                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        <span class="font-medium">Booked Appointments</span>
+                    </button>
+                    <button onclick="loadFeedbackHistory()" class="w-full flex items-center bg-white bg-opacity-10 hover:bg-opacity-20 text-white py-3 px-4 rounded-lg transition-all duration-300 border border-white border-opacity-20 hover:border-opacity-40">
+                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path>
+                        </svg>
+                        <span class="font-medium">Feedback History</span>
+                    </button>
+                    <button onclick="loadSupportTicketStatus()" class="w-full flex items-center bg-white bg-opacity-10 hover:bg-opacity-20 text-white py-3 px-4 rounded-lg transition-all duration-300 border border-white border-opacity-20 hover:border-opacity-40">
+                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364M12 2.25a9.75 9.75 0 100 19.5 9.75 9.75 0 000-19.5z"></path>
+                        </svg>
+                        <span class="font-medium">Support Tickets</span>
+                    </button>
+                    <button onclick="loadMedicalReports()" class="w-full flex items-center bg-white bg-opacity-10 hover:bg-opacity-20 text-white py-3 px-4 rounded-lg transition-all duration-300 border border-white border-opacity-20 hover:border-opacity-40">
+                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <span class="font-medium">Medical Reports</span>
+                    </button>
+                    <button onclick="loadMedicalRecommendations()" class="w-full flex items-center bg-white bg-opacity-10 hover:bg-opacity-20 text-white py-3 px-4 rounded-lg transition-all duration-300 border border-white border-opacity-20 hover:border-opacity-40">
+                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                        </svg>
+                        <span class="font-medium">Medical Recommendations</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Main Content Area -->
+            <div class="flex-1">
+        <!-- Dashboard Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            
+            <!-- Book Appointment Card -->
+            <div class="bg-white rounded-2xl shadow-xl p-8 card-hover border border-gray-100">
+                <div class="flex items-center mb-6">
+                    <div class="w-16 h-16 bg-gradient-to-r from-teal-500 to-cyan-500 rounded-full flex items-center justify-center mr-4">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        </div>
+                    <h3 class="text-2xl font-bold text-gray-900">Book Appointment</h3>
+                    </div>
+                <p class="text-gray-600 mb-6">Schedule an appointment with our healthcare professionals</p>
+                <a th:href="@{/appointment.html(email=${customer.email})}" 
+                   class="w-full bg-gradient-to-r from-teal-500 to-cyan-500 text-white py-3 px-6 rounded-lg font-semibold hover:from-teal-600 hover:to-cyan-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 inline-block text-center">
+                    Book Appointment →
+                </a>
+                </div>
+
+                    <!-- Medical Reports Card -->
+                    <div class="bg-white rounded-2xl shadow-xl p-8 card-hover border border-gray-100">
+                        <div class="flex items-center mb-6">
+                            <div class="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center mr-4">
+                                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-900">Medical Reports</h3>
+                        </div>
+                        <p class="text-gray-600 mb-6">View your medical history, test results, and health records</p>
+                        <button onclick="loadMedicalReports()" 
+                                class="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white py-3 px-6 rounded-lg font-semibold hover:from-green-600 hover:to-emerald-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                            View Reports →
+                        </button>
+                        <!-- Medical Reports Content Area -->
+                        <div id="medicalReportsContent" class="mt-6 hidden">
+                            <!-- Content will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Services Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+            <!-- Submit Feedback Card -->
+            <div class="bg-white rounded-2xl shadow-xl p-8 card-hover border border-gray-100">
+                <div class="flex items-center mb-6">
+                    <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center mr-4">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path>
+                        </svg>
+        </div>
+                    <h3 class="text-2xl font-bold text-gray-900">Submit Feedback</h3>
+            </div>
+                <p class="text-gray-600 mb-6">Share your experience and help us improve our services</p>
+                <a th:href="@{/feedback.html(email=${customer.email})}" 
+                   class="w-full bg-gradient-to-r from-blue-500 to-indigo-500 text-white py-3 px-6 rounded-lg font-semibold hover:from-blue-600 hover:to-indigo-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 inline-block text-center">
+                    Submit Feedback →
+                </a>
+                </div>
+
+                    <!-- Medical Recommendations Card -->
+                    <div class="bg-white rounded-2xl shadow-xl p-8 card-hover border border-gray-100">
+                        <div class="flex items-center mb-6">
+                            <div class="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mr-4">
+                                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-900">Medical Recommendations</h3>
+                        </div>
+                        <p class="text-gray-600 mb-6">Get personalized health recommendations and wellness tips</p>
+                        <button onclick="loadMedicalRecommendations()" 
+                                class="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-3 px-6 rounded-lg font-semibold hover:from-purple-600 hover:to-pink-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                            View Recommendations →
+                        </button>
+                        <!-- Medical Recommendations Content Area -->
+                        <div id="medicalRecommendationsContent" class="mt-6 hidden">
+                            <!-- Content will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Support Ticket & Dynamic Content -->
+                <div class="mt-8">
+            <!-- Create Support Ticket Card -->
+            <div class="bg-white rounded-2xl shadow-xl p-8 card-hover border border-gray-100">
+                <div class="flex items-center mb-6">
+                    <div class="w-16 h-16 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center mr-4">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364M12 2.25a9.75 9.75 0 100 19.5 9.75 9.75 0 000-19.5z"></path>
+                        </svg>
+                </div>
+                    <h3 class="text-2xl font-bold text-gray-900">Support Ticket</h3>
+                </div>
+                <p class="text-gray-600 mb-6">Need help? Create a support ticket for assistance</p>
+                <a th:href="@{/support-ticket.html(email=${customer.email})}" 
+                   class="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white py-3 px-6 rounded-lg font-semibold hover:from-orange-600 hover:to-red-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 inline-block text-center">
+                    Create Ticket →
+                </a>
+        </div>
+
+                    <!-- Dynamic Content Area -->
+                    <div id="dynamicContent" class="mt-8 bg-white rounded-xl shadow-lg p-8 card-hover border border-gray-100">
+                        <div class="text-center text-gray-500">
+                            <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                            <h3 class="text-xl font-semibold text-gray-700 mb-2">Welcome to Your Dashboard</h3>
+                            <p class="text-gray-500">Click on any option in the profile sidebar to view your information</p>
+                        </div>
+                    </div>
+                </div>
+                </div>
+        </div>
+
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-12 mt-12">
+        <div class="container mx-auto px-6">
+            <div class="grid md:grid-cols-4 gap-8">
+                <!-- Hospital Info -->
+                <div>
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-10 h-10 bg-gradient-to-br from-teal-500 to-cyan-500 rounded-full flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg">AROGYA MEDICAL CENTER</h3>
+                            <p class="text-sm text-gray-400">MediFlow Connect Portal</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-400 text-sm leading-relaxed">
+                        Your trusted healthcare partner with over 25 years of excellence in medical care and patient services.
+                    </p>
+                </div>
+
+                <!-- Patient Services -->
+                <div>
+                    <h4 class="font-semibold text-lg mb-4">Patient Services</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="/appointment.html" class="text-gray-400 hover:text-white transition-colors">Book Appointment</a></li>
+                        <li><a href="/feedback.html" class="text-gray-400 hover:text-white transition-colors">Submit Feedback</a></li>
+                        <li><a href="/support-ticket.html" class="text-gray-400 hover:text-white transition-colors">Support Ticket</a></li>
+                        <li><a href="/profile-settings.html" class="text-gray-400 hover:text-white transition-colors">Profile Settings</a></li>
+                    </ul>
+                </div>
+
+                <!-- Quick Links -->
+                <div>
+                    <h4 class="font-semibold text-lg mb-4">Quick Links</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="/" class="text-gray-400 hover:text-white transition-colors">Home</a></li>
+                        <li><a href="/login.html" class="text-gray-400 hover:text-white transition-colors">Login</a></li>
+                        <li><a href="/signup.html" class="text-gray-400 hover:text-white transition-colors">Sign Up</a></li>
+                        <li><a href="tel:1313" class="text-gray-400 hover:text-white transition-colors">Emergency: 1313</a></li>
+                    </ul>
+                </div>
+
+                <!-- Emergency Contact -->
+                <div>
+                    <h4 class="font-semibold text-lg mb-4">24/7 Emergency</h4>
+                    <div class="bg-red-600 rounded-lg p-4 text-center mb-4">
+                        <div class="text-2xl font-bold">1313</div>
+                        <div class="text-sm">Always Available</div>
+                    </div>
+                    <div class="text-sm text-gray-400">
+                        <p>📍 Main Hospital Complex</p>
+                        <p>Colombo, Sri Lanka</p>
+                        <p>📞 +94 11 466 5500</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-sm text-gray-400">
+                <p>&copy; 2025 Arogya Medical Center. All Rights Reserved. | MediFlow Connect Portal - Patient Dashboard</p>
+            </div>
+        </div>
+    </footer>
+
+<script>
+        function loadMedicalReports() {
+            // Get the customer email from the hidden field
+            const customerEmail = document.getElementById('customerEmail')?.value || 'test@example.com';
+            
+            console.log('=== DEBUG: loadMedicalReports called ===');
+            console.log('Customer email:', customerEmail);
+            
+            // Show loading state in the medical reports content area
+            const medicalReportsContent = document.getElementById('medicalReportsContent');
+            medicalReportsContent.classList.remove('hidden');
+            medicalReportsContent.innerHTML = `
+                <div class="text-center py-8">
+                    <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+                    <p class="mt-2 text-gray-600">Loading your medical reports...</p>
+                    <p class="mt-1 text-sm text-gray-500">Email: ${customerEmail}</p>
+                </div>
+            `;
+            
+            const apiUrl = `/api/medical-reports/patient?email=${encodeURIComponent(customerEmail)}`;
+            console.log('API URL:', apiUrl);
+            
+            // Fetch medical reports from API
+            fetch(apiUrl)
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Medical reports data:', data);
+                    
+                    if (data.success && data.reports) {
+                        displayMedicalReports(data.reports);
+                    } else {
+                        displayNoReportsMessage(data.message || 'No medical reports found');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading medical reports:', error);
+                    displayReportsError('Error loading medical reports. Please try again.');
+                });
+        }
+        
+        function displayMedicalReports(reports) {
+            const medicalReportsContent = document.getElementById('medicalReportsContent');
+            
+            if (reports.length === 0) {
+                displayNoReportsMessage('No medical reports available yet.');
+                return;
+            }
+            
+            let reportsHtml = `
+                <div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
+                    <div class="flex items-center justify-between mb-6">
+                        <h4 class="text-xl font-bold text-gray-900">Your Medical Reports</h4>
+                        <span class="bg-green-100 text-green-800 text-sm font-medium px-3 py-1 rounded-full">
+                            ${reports.length} Report${reports.length !== 1 ? 's' : ''}
+                        </span>
+                    </div>
+                    <div class="space-y-4">
+            `;
+            
+            reports.forEach(report => {
+                const priorityColor = getPriorityColor(report.priority);
+                const reportDate = new Date(report.reportDate).toLocaleDateString();
+                const createdAt = new Date(report.createdAt).toLocaleDateString();
+                
+                reportsHtml += `
+                    <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow duration-200 bg-white">
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="flex-1">
+                                <h5 class="text-lg font-semibold text-gray-900 mb-1">${report.reportType}</h5>
+                                <div class="flex items-center space-x-4 text-sm text-gray-600">
+                                    <span class="flex items-center">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                        </svg>
+                                        ${reportDate}
+                                    </span>
+                                    <span class="flex items-center">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        ${createdAt}
+                                    </span>
+                                </div>
+                            </div>
+                            <span class="px-3 py-1 text-xs font-medium rounded-full ${priorityColor}">
+                                ${report.priority.toUpperCase()}
+                            </span>
+                        </div>
+                        <div class="bg-gray-50 rounded-lg p-3 mb-3">
+                            <p class="text-gray-700 text-sm leading-relaxed">${report.reportDescription}</p>
+                        </div>
+                        <div class="text-xs text-gray-500">
+                            Created by: ${report.createdBy || 'Medical Staff'}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            reportsHtml += `
+                    </div>
+                </div>
+            `;
+            
+            medicalReportsContent.innerHTML = reportsHtml;
+        }
+        
+        function displayNoReportsMessage(message) {
+            const medicalReportsContent = document.getElementById('medicalReportsContent');
+            medicalReportsContent.innerHTML = `
+                <div class="bg-gray-50 rounded-xl p-8 border border-gray-200 text-center">
+                    <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                    </div>
+                    <h4 class="text-xl font-semibold text-gray-900 mb-2">No Medical Reports</h4>
+                    <p class="text-gray-600 mb-4">${message}</p>
+                    <p class="text-sm text-gray-500">Medical reports will appear here once they are uploaded by your healthcare provider.</p>
+                </div>
+            `;
+        }
+        
+        function displayReportsError(message) {
+            const medicalReportsContent = document.getElementById('medicalReportsContent');
+            medicalReportsContent.innerHTML = `
+                <div class="bg-gray-50 rounded-xl p-8 border border-gray-200 text-center">
+                    <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <h4 class="text-xl font-semibold text-gray-900 mb-2">Error Loading Reports</h4>
+                    <p class="text-gray-600 mb-4">${message}</p>
+                    <button onclick="loadMedicalReports()" 
+                            class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors duration-200">
+                        Try Again
+                    </button>
+                </div>
+            `;
+        }
+        
+        function getPriorityColor(priority) {
+            switch(priority.toLowerCase()) {
+                case 'urgent':
+                    return 'bg-red-100 text-red-800';
+                case 'high':
+                    return 'bg-orange-100 text-orange-800';
+                case 'medium':
+                    return 'bg-yellow-100 text-yellow-800';
+                case 'low':
+                    return 'bg-green-100 text-green-800';
+                default:
+                    return 'bg-gray-100 text-gray-800';
+            }
+        }
+
+        function loadMedicalRecommendations() {
+            // Get the customer email from the hidden field
+            const customerEmail = document.getElementById('customerEmail')?.value || 'test@example.com';
+            
+            console.log('=== DEBUG: loadMedicalRecommendations called ===');
+            console.log('Customer email:', customerEmail);
+            
+            // Show loading state in the medical recommendations content area
+            const medicalRecommendationsContent = document.getElementById('medicalRecommendationsContent');
+            medicalRecommendationsContent.classList.remove('hidden');
+            medicalRecommendationsContent.innerHTML = `
+                <div class="text-center py-8">
+                    <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+                    <p class="mt-2 text-gray-600">Loading your medical recommendations...</p>
+                    <p class="mt-1 text-sm text-gray-500">Email: ${customerEmail}</p>
+                </div>
+            `;
+            
+            const apiUrl = `/api/medical-recommendations/patient?email=${encodeURIComponent(customerEmail)}`;
+            console.log('API URL:', apiUrl);
+            
+            // Fetch medical recommendations from API
+            fetch(apiUrl)
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Medical recommendations data:', data);
+                    
+                    if (data.success && data.recommendations) {
+                        displayMedicalRecommendations(data.recommendations);
+                    } else {
+                        displayNoRecommendationsMessage(data.message || 'No medical recommendations found');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading medical recommendations:', error);
+                    displayRecommendationsError('Error loading medical recommendations. Please try again.');
+                });
+        }
+        
+        function displayMedicalRecommendations(recommendations) {
+            const medicalRecommendationsContent = document.getElementById('medicalRecommendationsContent');
+            
+            if (recommendations.length === 0) {
+                displayNoRecommendationsMessage('No medical recommendations available yet.');
+                return;
+            }
+            
+            let recommendationsHtml = `
+                <div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
+                    <div class="flex items-center justify-between mb-6">
+                        <h4 class="text-xl font-bold text-gray-900">Your Medical Recommendations</h4>
+                        <span class="bg-purple-100 text-purple-800 text-sm font-medium px-3 py-1 rounded-full">
+                            ${recommendations.length} Recommendation${recommendations.length !== 1 ? 's' : ''}
+                        </span>
+                    </div>
+                    <div class="space-y-4">
+            `;
+            
+            recommendations.forEach(recommendation => {
+                const priorityColor = getPriorityColor(recommendation.priority);
+                const createdAt = new Date(recommendation.createdAt).toLocaleDateString();
+                const followUpDate = recommendation.followUpDate ? 
+                    new Date(recommendation.followUpDate).toLocaleDateString() : null;
+                
+                recommendationsHtml += `
+                    <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow duration-200 bg-white">
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="flex-1">
+                                <h5 class="text-lg font-semibold text-gray-900 mb-1">${recommendation.recommendationType}</h5>
+                                <div class="flex items-center space-x-4 text-sm text-gray-600">
+                                    <span class="flex items-center">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        ${createdAt}
+                                    </span>
+                                    ${followUpDate ? `
+                                    <span class="flex items-center">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                        </svg>
+                                        Follow-up: ${followUpDate}
+                                    </span>
+                                    ` : ''}
+                                </div>
+                            </div>
+                            <span class="px-3 py-1 text-xs font-medium rounded-full ${priorityColor}">
+                                ${recommendation.priority.toUpperCase()}
+                            </span>
+                        </div>
+                        <div class="bg-gray-50 rounded-lg p-3 mb-3">
+                            <p class="text-gray-700 text-sm leading-relaxed">${recommendation.recommendationDetails}</p>
+                        </div>
+                        <div class="text-xs text-gray-500">
+                            Created by: ${recommendation.createdBy || 'Medical Staff'}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            recommendationsHtml += `
+                    </div>
+                </div>
+            `;
+            
+            medicalRecommendationsContent.innerHTML = recommendationsHtml;
+        }
+        
+        function displayNoRecommendationsMessage(message) {
+            const medicalRecommendationsContent = document.getElementById('medicalRecommendationsContent');
+            medicalRecommendationsContent.innerHTML = `
+                <div class="bg-gray-50 rounded-xl p-8 border border-gray-200 text-center">
+                    <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                        </svg>
+                    </div>
+                    <h4 class="text-xl font-semibold text-gray-900 mb-2">No Medical Recommendations</h4>
+                    <p class="text-gray-600 mb-4">${message}</p>
+                    <p class="text-sm text-gray-500">Medical recommendations will appear here once they are provided by your healthcare provider.</p>
+                </div>
+            `;
+        }
+        
+        function displayRecommendationsError(message) {
+            const medicalRecommendationsContent = document.getElementById('medicalRecommendationsContent');
+            medicalRecommendationsContent.innerHTML = `
+                <div class="bg-gray-50 rounded-xl p-8 border border-gray-200 text-center">
+                    <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <h4 class="text-xl font-semibold text-gray-900 mb-2">Error Loading Recommendations</h4>
+                    <p class="text-gray-600 mb-4">${message}</p>
+                    <button onclick="loadMedicalRecommendations()" 
+                            class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors duration-200">
+                        Try Again
+                    </button>
+                </div>
+            `;
+        }
+
+        function loadBookedAppointments() {
+            // Get the customer email from the hidden field
+            const customerEmail = document.getElementById('customerEmail')?.value || 'test@example.com';
+            
+            console.log('=== DEBUG: loadBookedAppointments called ===');
+            console.log('Customer email:', customerEmail);
+            console.log('Hidden field value:', document.getElementById('customerEmail')?.value);
+            
+            // Show loading state
+            const dynamicContent = document.getElementById('dynamicContent');
+            console.log('Dynamic content element:', dynamicContent);
+            
+            dynamicContent.innerHTML = `
+                <div class="text-center py-8">
+                    <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600"></div>
+                    <p class="mt-2 text-gray-600">Loading your appointments...</p>
+                    <p class="mt-1 text-sm text-gray-500">Email: ${customerEmail}</p>
+                </div>
+            `;
+            
+            const apiUrl = `/api/appointments/patient?email=${encodeURIComponent(customerEmail)}`;
+            console.log('API URL:', apiUrl);
+            
+            // Fetch appointments from API
+            fetch(apiUrl)
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    console.log('Response headers:', response.headers);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('=== DEBUG: API Response ===');
+                    console.log('Full response:', data);
+                    console.log('Success:', data.success);
+                    console.log('Count:', data.count);
+                    console.log('Appointments:', data.appointments);
+                    
+                    if (data.success) {
+                        displayAppointments(data.appointments, data.count);
+                    } else {
+                        displayError(data.message || 'Failed to load appointments');
+                    }
+                })
+                .catch(error => {
+                    console.error('=== DEBUG: Error in fetch ===');
+                    console.error('Error loading appointments:', error);
+                    displayError('Error loading appointments. Please try again.');
+                });
+        }
+        
+        function displayAppointments(appointments, count) {
+            const dynamicContent = document.getElementById('dynamicContent');
+            
+            if (count === 0) {
+                dynamicContent.innerHTML = `
+                    <div class="text-center py-8">
+                        <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        <h3 class="text-xl font-semibold text-gray-700 mb-2">No Appointments Found</h3>
+                        <p class="text-gray-500 mb-4">You haven't booked any appointments yet.</p>
+                        <a href="/appointment.html" class="inline-block bg-teal-500 text-white px-6 py-2 rounded-lg hover:bg-teal-600 transition-colors">
+                            Book Your First Appointment
+                        </a>
+                    </div>
+                `;
+                return;
+            }
+            
+            let appointmentsHtml = `
+                <div class="mb-6">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-2">Your Booked Appointments</h3>
+                    <p class="text-gray-600">You have ${count} appointment${count !== 1 ? 's' : ''} booked</p>
+                </div>
+                <div class="space-y-4">
+            `;
+            
+            appointments.forEach(appointment => {
+                const appointmentDate = new Date(appointment.appointmentDate);
+                const formattedDate = appointmentDate.toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                
+                const isUpcoming = appointmentDate >= new Date();
+                const statusColor = isUpcoming ? 'text-green-600' : 'text-gray-500';
+                const statusText = isUpcoming ? 'Upcoming' : 'Past';
+                const statusBg = isUpcoming ? 'bg-green-100' : 'bg-gray-100';
+                
+                appointmentsHtml += `
+                    <div class="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+                        <div class="flex items-start justify-between">
+                            <div class="flex-1">
+                                <div class="flex items-center mb-2">
+                                    <div class="w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center mr-3">
+                                        <svg class="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-lg font-semibold text-gray-900">${appointment.doctorName}</h4>
+                                        <p class="text-sm text-gray-600">${appointment.specialization} - ${appointment.department}</p>
+                                    </div>
+                                </div>
+                                <div class="ml-13">
+                                    <p class="text-gray-700 mb-1"><strong>Date:</strong> ${formattedDate}</p>
+                                    <p class="text-gray-700 mb-1"><strong>Patient:</strong> ${appointment.patientName}</p>
+                                    <p class="text-gray-700 mb-1"><strong>Room:</strong> Room ${appointment.roomId}</p>
+                                    <p class="text-gray-700"><strong>Appointment ID:</strong> #${appointment.id}</p>
+                                </div>
+                            </div>
+                            <div class="ml-4">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${statusBg} ${statusColor}">
+                                    ${statusText}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            appointmentsHtml += `
+                </div>
+                <div class="mt-6 text-center">
+                    <a href="/appointment.html" class="inline-block bg-teal-500 text-white px-6 py-2 rounded-lg hover:bg-teal-600 transition-colors">
+                        Book Another Appointment
+                    </a>
+                </div>
+            `;
+            
+            dynamicContent.innerHTML = appointmentsHtml;
+        }
+        
+        function displayError(message) {
+            const dynamicContent = document.getElementById('dynamicContent');
+            dynamicContent.innerHTML = `
+                <div class="text-center py-8">
+                    <svg class="w-16 h-16 mx-auto mb-4 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <h3 class="text-xl font-semibold text-gray-700 mb-2">Error Loading Appointments</h3>
+                    <p class="text-gray-500 mb-4">${message}</p>
+                    <button onclick="loadBookedAppointments()" class="inline-block bg-teal-500 text-white px-6 py-2 rounded-lg hover:bg-teal-600 transition-colors">
+                        Try Again
+                    </button>
+                </div>
+            `;
+        }
+
+        function loadFeedbackHistory() {
+            // Get the customer email from the hidden field
+            const customerEmail = document.getElementById('customerEmail')?.value || 'test@example.com';
+            
+            console.log('=== DEBUG: loadFeedbackHistory called ===');
+            console.log('Customer email:', customerEmail);
+            
+            // Show loading state
+            const dynamicContent = document.getElementById('dynamicContent');
+            dynamicContent.innerHTML = `
+                <div class="text-center py-8">
+                    <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600"></div>
+                    <p class="mt-2 text-gray-600">Loading your feedback history...</p>
+                    <p class="mt-1 text-sm text-gray-500">Email: ${customerEmail}</p>
+                </div>
+            `;
+            
+            const apiUrl = `/api/feedback/history?email=${encodeURIComponent(customerEmail)}`;
+            console.log('API URL:', apiUrl);
+            
+            // Fetch feedback from API
+            fetch(apiUrl)
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('=== DEBUG: Feedback API Response ===');
+                    console.log('Full response:', data);
+                    console.log('Success:', data.success);
+                    console.log('Count:', data.count);
+                    console.log('Feedback:', data.feedback);
+                    
+                    if (data.success) {
+                        displayFeedbackHistory(data.feedback, data.count);
+                    } else {
+                        displayError(data.message || 'Failed to load feedback history');
+                    }
+                })
+                .catch(error => {
+                    console.error('=== DEBUG: Error in feedback fetch ===');
+                    console.error('Error loading feedback:', error);
+                    displayError('Error loading feedback history. Please try again.');
+                });
+        }
+
+        function loadSupportTicketStatus() {
+            // Get the customer email from the hidden field
+            const customerEmail = document.getElementById('customerEmail')?.value || 'test@example.com';
+            
+            console.log('=== DEBUG: loadSupportTicketStatus called ===');
+            console.log('Customer email:', customerEmail);
+            
+            // Show loading state
+            const dynamicContent = document.getElementById('dynamicContent');
+            dynamicContent.innerHTML = `
+                <div class="text-center py-8">
+                    <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600"></div>
+                    <p class="mt-2 text-gray-600">Loading your support tickets...</p>
+                    <p class="mt-1 text-sm text-gray-500">Email: ${customerEmail}</p>
+                </div>
+            `;
+            
+            const apiUrl = `/api/support-tickets/patient?email=${encodeURIComponent(customerEmail)}`;
+            console.log('API URL:', apiUrl);
+            
+            // Fetch support tickets from API
+            fetch(apiUrl)
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('=== DEBUG: Support Tickets API Response ===');
+                    console.log('Full response:', data);
+                    console.log('Success:', data.success);
+                    console.log('Count:', data.count);
+                    console.log('Tickets:', data.tickets);
+                    
+                    if (data.success) {
+                        displaySupportTickets(data.tickets, data.count);
+                    } else {
+                        displayError(data.message || 'Failed to load support tickets');
+                    }
+                })
+                .catch(error => {
+                    console.error('=== DEBUG: Error in support tickets fetch ===');
+                    console.error('Error loading support tickets:', error);
+                    displayError('Error loading support tickets. Please try again.');
+                });
+        }
+        
+        function displayFeedbackHistory(feedbackList, count) {
+            const dynamicContent = document.getElementById('dynamicContent');
+            
+            if (count === 0) {
+                dynamicContent.innerHTML = `
+                    <div class="text-center py-8">
+                        <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path>
+                        </svg>
+                        <h3 class="text-xl font-semibold text-gray-700 mb-2">No Feedback Found</h3>
+                        <p class="text-gray-500 mb-4">You haven't submitted any feedback yet.</p>
+                        <a href="/feedback.html" class="inline-block bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+                            Submit Your First Feedback
+                        </a>
+                    </div>
+                `;
+                return;
+            }
+            
+            let feedbackHtml = `
+                <div class="mb-6">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-2">Your Feedback History</h3>
+                    <p class="text-gray-600">You have submitted ${count} feedback${count !== 1 ? 's' : ''}</p>
+                </div>
+                <div class="space-y-4">
+            `;
+            
+            feedbackList.forEach(feedback => {
+                const createdAt = new Date(feedback.createdAt);
+                const formattedDate = createdAt.toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                
+                // Create star rating display
+                let starsHtml = '';
+                for (let i = 1; i <= 5; i++) {
+                    if (i <= feedback.rating) {
+                        starsHtml += '<span class="text-yellow-400">★</span>';
+                    } else {
+                        starsHtml += '<span class="text-gray-300">★</span>';
+                    }
+                }
+                
+                feedbackHtml += `
+                    <div class="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex-1">
+                                <h4 class="text-lg font-semibold text-gray-900 capitalize">${feedback.feedbackType}</h4>
+                                <p class="text-sm text-gray-600">${formattedDate}</p>
+                            </div>
+                            <div class="ml-4">
+                                <div class="flex items-center">
+                                    <span class="text-sm text-gray-600 mr-2">Rating:</span>
+                                    <div class="flex">${starsHtml}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <p class="text-gray-700">${feedback.message}</p>
+                        </div>
+                        <div class="mt-3 text-sm text-gray-500">
+                            Feedback ID: #${feedback.feedbackId}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            feedbackHtml += `
+                </div>
+                <div class="mt-6 text-center">
+                    <a href="/feedback.html" class="inline-block bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+                        Submit New Feedback
+                    </a>
+                </div>
+            `;
+            
+            dynamicContent.innerHTML = feedbackHtml;
+        }
+        
+        function displaySupportTickets(tickets, count) {
+            const dynamicContent = document.getElementById('dynamicContent');
+            
+            if (count === 0) {
+                dynamicContent.innerHTML = `
+                    <div class="text-center py-8">
+                        <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364M12 2.25a9.75 9.75 0 100 19.5 9.75 9.75 0 000-19.5z"></path>
+                        </svg>
+                        <h3 class="text-xl font-semibold text-gray-700 mb-2">No Support Tickets Found</h3>
+                        <p class="text-gray-500 mb-4">You haven't created any support tickets yet.</p>
+                        <a href="/support-ticket.html" class="inline-block bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition-colors">
+                            Create Your First Ticket
+                        </a>
+                    </div>
+                `;
+                return;
+            }
+            
+            let ticketsHtml = `
+                <div class="mb-6">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-2">Your Support Tickets</h3>
+                    <p class="text-gray-600">You have ${count} support ticket${count !== 1 ? 's' : ''}</p>
+                </div>
+                <div class="space-y-4">
+            `;
+            
+            tickets.forEach(ticket => {
+                const createdAt = new Date(ticket.createdAt);
+                const formattedDate = createdAt.toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                
+                // Status color coding
+                let statusColor = 'text-gray-600';
+                let statusBg = 'bg-gray-100';
+                if (ticket.status === 'open') {
+                    statusColor = 'text-green-600';
+                    statusBg = 'bg-green-100';
+                } else if (ticket.status === 'closed') {
+                    statusColor = 'text-red-600';
+                    statusBg = 'bg-red-100';
+                } else if (ticket.status === 'in-progress') {
+                    statusColor = 'text-blue-600';
+                    statusBg = 'bg-blue-100';
+                }
+                
+                // Priority color coding
+                let priorityColor = 'text-gray-600';
+                let priorityBg = 'bg-gray-100';
+                if (ticket.priority === 'high') {
+                    priorityColor = 'text-red-600';
+                    priorityBg = 'bg-red-100';
+                } else if (ticket.priority === 'medium') {
+                    priorityColor = 'text-yellow-600';
+                    priorityBg = 'bg-yellow-100';
+                } else if (ticket.priority === 'low') {
+                    priorityColor = 'text-green-600';
+                    priorityBg = 'bg-green-100';
+                }
+                
+                ticketsHtml += `
+                    <div class="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex-1">
+                                <h4 class="text-lg font-semibold text-gray-900">${ticket.subject}</h4>
+                                <p class="text-sm text-gray-600">${formattedDate}</p>
+                            </div>
+                            <div class="ml-4 flex space-x-2">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${statusBg} ${statusColor}">
+                                    ${ticket.status.charAt(0).toUpperCase() + ticket.status.slice(1)}
+                                </span>
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${priorityBg} ${priorityColor}">
+                                    ${ticket.priority.charAt(0).toUpperCase() + ticket.priority.slice(1)}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <span class="text-sm font-medium text-gray-700">Category:</span>
+                            <span class="text-sm text-gray-600 ml-2 capitalize">${ticket.category}</span>
+                        </div>
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <p class="text-gray-700">${ticket.description}</p>
+                        </div>
+                        <div class="mt-3 text-sm text-gray-500">
+                            Ticket ID: #${ticket.ticketId}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            ticketsHtml += `
+                </div>
+                <div class="mt-6 text-center">
+                    <a href="/support-ticket.html" class="inline-block bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition-colors">
+                        Create New Ticket
+                    </a>
+                </div>
+            `;
+            
+            dynamicContent.innerHTML = ticketsHtml;
+        }
+
+        function loadPrescriptions() {
+            // This would typically load prescriptions from the server
+            alert('Prescriptions feature coming soon! This would display your current medications and prescription history.');
+        }
+
+        function toggleProfile() {
+            const dropdown = document.getElementById('profileDropdown');
+            const notificationsDropdown = document.getElementById('notificationsDropdown');
+            
+            // Close notifications dropdown if open
+            if (!notificationsDropdown.classList.contains('hidden')) {
+                notificationsDropdown.classList.add('hidden');
+            }
+            
+            dropdown.classList.toggle('hidden');
+        }
+
+        function toggleNotifications() {
+            const dropdown = document.getElementById('notificationsDropdown');
+            const profileDropdown = document.getElementById('profileDropdown');
+            
+            // Close profile dropdown if open
+            if (!profileDropdown.classList.contains('hidden')) {
+                profileDropdown.classList.add('hidden');
+            }
+            
+            dropdown.classList.toggle('hidden');
+            
+            // Load notifications when dropdown is opened
+            if (!dropdown.classList.contains('hidden')) {
+                loadNotifications();
+            }
+        }
+
+        // Notification functions
+        // Get user email from URL parameters
+        let currentUserEmail = 'customer@example.com'; // Default fallback
+        
+        // Try to get email from URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const emailFromUrl = urlParams.get('email');
+        if (emailFromUrl) {
+            currentUserEmail = emailFromUrl;
+            console.log('Using email from URL:', currentUserEmail);
+        } else {
+            console.log('Using default email:', currentUserEmail);
+        }
+        
+        function loadNotifications() {
+            const notificationsList = document.getElementById('notificationsList');
+            console.log('Loading notifications for user:', currentUserEmail);
+            
+            fetch(`/api/notifications/user/${currentUserEmail}`)
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(notifications => {
+                    console.log('Received notifications:', notifications);
+                    console.log('About to call displayNotifications');
+                    displayNotifications(notifications);
+                    console.log('About to call updateNotificationBadge');
+                    updateNotificationBadge();
+                    console.log('Both functions called successfully');
+                })
+                .catch(error => {
+                    console.error('Error loading notifications:', error);
+                    notificationsList.innerHTML = `
+                        <div class="px-4 py-8 text-center text-gray-500">
+                            <p class="text-sm">Error loading notifications: ${error.message}</p>
+                            <p class="text-xs mt-2">Check console for details</p>
+                        </div>
+                    `;
+                });
+        }
+
+        function displayNotifications(notifications) {
+            console.log('displayNotifications called with:', notifications);
+            const notificationsList = document.getElementById('notificationsList');
+            console.log('notificationsList element:', notificationsList);
+            
+            if (notifications.length === 0) {
+                console.log('No notifications to display');
+                notificationsList.innerHTML = `
+                    <div class="px-4 py-8 text-center text-gray-500">
+                        <p class="text-sm">No notifications</p>
+                    </div>
+                `;
+                return;
+            }
+
+            console.log(`Displaying ${notifications.length} notifications`);
+            let html = '';
+            notifications.forEach((notification, index) => {
+                console.log(`Processing notification ${index + 1}:`, notification);
+                const priorityColor = getPriorityColor(notification.priority);
+                const typeIcon = getTypeIcon(notification.type);
+                const isRead = notification.isRead ? 'opacity-60' : '';
+                
+                html += `
+                    <div class="px-4 py-3 hover:bg-gray-50 cursor-pointer ${isRead}" onclick="markAsRead(${notification.notificationId})">
+                        <div class="flex items-start">
+                            <div class="w-2 h-2 ${priorityColor} rounded-full mt-2 mr-3"></div>
+                            <div class="flex-1">
+                                <div class="flex items-center">
+                                    <span class="text-lg mr-2">${typeIcon}</span>
+                                    <p class="text-sm font-medium text-gray-900">${notification.title}</p>
+                                </div>
+                                <p class="text-xs text-gray-600 mt-1">${notification.message}</p>
+                                <p class="text-xs text-gray-500 mt-1">${formatTimeAgo(notification.createdAt)}</p>
+                            </div>
+                            ${!notification.isRead ? '<div class="w-2 h-2 bg-red-500 rounded-full mt-2"></div>' : ''}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            console.log('Generated HTML:', html);
+            notificationsList.innerHTML = html;
+            console.log('HTML set to notificationsList');
+            
+            // Fallback: If still showing loading, force update
+            setTimeout(() => {
+                if (notificationsList.innerHTML.includes('Loading notifications')) {
+                    console.log('Fallback: Force updating notifications display');
+                    notificationsList.innerHTML = html;
+                }
+            }, 100);
+        }
+
+        function getPriorityColor(priority) {
+            switch(priority.toUpperCase()) {
+                case 'URGENT': return 'bg-red-500';
+                case 'HIGH': return 'bg-orange-500';
+                case 'MEDIUM': return 'bg-blue-500';
+                case 'LOW': return 'bg-gray-500';
+                default: return 'bg-teal-500';
+            }
+        }
+
+        function getTypeIcon(type) {
+            switch(type.toUpperCase()) {
+                case 'APPOINTMENT': return '📅';
+                case 'MEDICAL_REPORT': return '📋';
+                case 'RECOMMENDATION': return '💊';
+                case 'SUPPORT_TICKET': return '🎫';
+                case 'SYSTEM': return '⚙️';
+                default: return '🔔';
+            }
+        }
+
+        function formatTimeAgo(createdAt) {
+            const now = new Date();
+            const created = new Date(createdAt);
+            const diffMs = now - created;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+
+            if (diffMins < 1) return 'Just now';
+            if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+            if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+            return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+        }
+
+        function markAsRead(notificationId) {
+            fetch(`/api/notifications/${notificationId}/read`, {
+                method: 'PUT'
+            })
+            .then(response => {
+                if (response.ok) {
+                    loadNotifications(); // Reload notifications
+                }
+            })
+            .catch(error => {
+                console.error('Error marking notification as read:', error);
+            });
+        }
+
+        function markAllAsRead() {
+            fetch(`/api/notifications/user/${currentUserEmail}/read-all`, {
+                method: 'PUT'
+            })
+            .then(response => {
+                if (response.ok) {
+                    loadNotifications(); // Reload notifications
+                }
+            })
+            .catch(error => {
+                console.error('Error marking all notifications as read:', error);
+            });
+        }
+
+        function updateNotificationBadge() {
+            console.log('Updating notification badge for user:', currentUserEmail);
+            fetch(`/api/notifications/user/${currentUserEmail}/count`)
+                .then(response => {
+                    console.log('Badge response status:', response.status);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(count => {
+                    console.log('Notification count:', count);
+                    const badge = document.getElementById('notificationBadge');
+                    if (count > 0) {
+                        badge.textContent = count;
+                        badge.classList.remove('hidden');
+                    } else {
+                        badge.classList.add('hidden');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error updating notification badge:', error);
+                });
+        }
+
+        // Load notification count on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateNotificationBadge();
+        });
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(event) {
+            const profileDropdown = document.getElementById('profileDropdown');
+            const notificationsDropdown = document.getElementById('notificationsDropdown');
+            const profileButton = event.target.closest('[onclick="toggleProfile()"]');
+            const notificationsButton = event.target.closest('[onclick="toggleNotifications()"]');
+            
+            if (!profileButton && !profileDropdown.contains(event.target)) {
+                profileDropdown.classList.add('hidden');
+            }
+            
+            if (!notificationsButton && !notificationsDropdown.contains(event.target)) {
+                notificationsDropdown.classList.add('hidden');
+            }
+        });
+
+        // Add some interactive animations
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animate statistics cards on load
+            const statCards = document.querySelectorAll('.grid > div');
+            statCards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(20px)';
+                    card.style.transition = 'all 0.5s ease';
+                    
+                    setTimeout(() => {
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateY(0)';
+                    }, 100);
+                }, index * 100);
+            });
+        });
+</script>
+</body>
+</html>
+

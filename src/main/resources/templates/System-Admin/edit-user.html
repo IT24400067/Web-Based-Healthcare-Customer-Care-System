@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit User - Healthcare Customer Care</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Navigation Header -->
+    <header class="bg-white shadow-md py-4 px-6 flex justify-between items-center sticky top-0 z-50">
+        <div class="flex items-center">
+            <img src="https://i.ibb.co/S6D712p/Arogya-Medical-Center-Logo.png" alt="Arogya Medical Center Logo" class="h-10 mr-3">
+            <h1 class="text-2xl font-bold text-teal-700">MediFlow Connect - System Admin</h1>
+        </div>
+        <nav class="flex items-center space-x-4">
+            <a href="/system-admin/dashboard" th:href="@{/system-admin/dashboard(email=${adminEmail})}" class="text-teal-600 hover:text-teal-800 font-medium px-4 py-2 rounded-md transition-colors duration-300">Dashboard</a>
+            <form th:action="@{/logout}" method="post" class="inline-block">
+                <button type="submit" class="bg-red-500 hover:bg-red-600 text-white font-medium px-4 py-2 rounded-md transition-colors duration-300">Logout</button>
+            </form>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <div class="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <!-- Page Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">Edit User</h1>
+            <p class="mt-2 text-gray-600">Update user information and role assignments</p>
+        </div>
+
+        <!-- Success/Error Messages -->
+        <div id="messageContainer" class="mb-6 hidden">
+            <div id="successMessage" class="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-md hidden">
+                <div class="flex">
+                    <i class="fas fa-check-circle mr-2 mt-0.5"></i>
+                    <span id="successText"></span>
+                </div>
+            </div>
+            <div id="errorMessage" class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md hidden">
+                <div class="flex">
+                    <i class="fas fa-exclamation-circle mr-2 mt-0.5"></i>
+                    <span id="errorText"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit User Form -->
+        <div class="bg-white shadow rounded-lg">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-medium text-gray-900">User Information</h2>
+            </div>
+            
+            <form id="editUserForm" class="p-6 space-y-6">
+                <!-- Hidden field for user email -->
+                <input type="hidden" id="userEmail" name="email" th:value="${userEmail}">
+                <!-- Hidden field for admin email -->
+                <input type="hidden" id="adminEmail" th:value="${adminEmail}">
+                
+                <!-- First Name -->
+                <div>
+                    <label for="firstName" class="block text-sm font-medium text-gray-700 mb-2">
+                        First Name <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" id="firstName" name="firstName" required
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           placeholder="Enter first name">
+                </div>
+
+                <!-- Last Name -->
+                <div>
+                    <label for="lastName" class="block text-sm font-medium text-gray-700 mb-2">
+                        Last Name <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" id="lastName" name="lastName" required
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           placeholder="Enter last name">
+                </div>
+
+                <!-- Email -->
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+                        Email Address <span class="text-red-500">*</span>
+                    </label>
+                    <input type="email" id="email" name="email" required readonly
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600"
+                           placeholder="Enter email address">
+                    <p class="mt-1 text-sm text-gray-500">Email cannot be changed</p>
+                </div>
+
+                <!-- Phone Number -->
+                <div>
+                    <label for="phoneNumber" class="block text-sm font-medium text-gray-700 mb-2">
+                        Phone Number
+                    </label>
+                    <input type="tel" id="phoneNumber" name="phoneNumber"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           placeholder="Enter phone number">
+                </div>
+
+                <!-- Password -->
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+                        New Password
+                    </label>
+                    <input type="password" id="password" name="password"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           placeholder="Enter new password (leave blank to keep current)">
+                    <p class="mt-1 text-sm text-gray-500">Leave blank to keep current password</p>
+                </div>
+
+                <!-- Role -->
+                <div>
+                    <label for="role" class="block text-sm font-medium text-gray-700 mb-2">
+                        Role <span class="text-red-500">*</span>
+                    </label>
+                    <select id="role" name="role" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">Select a role</option>
+                    </select>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+                    <button type="button" id="cancelBtn" 
+                            class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <i class="fas fa-times mr-2"></i>Cancel
+                    </button>
+                    <button type="submit" id="updateBtn"
+                            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <i class="fas fa-save mr-2"></i>Update User
+                    </button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-lg p-6 flex items-center space-x-3">
+            <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+            <span class="text-gray-700">Updating user...</span>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentUser = null;
+
+        // Load role dropdown options
+        async function loadRoleDropdown() {
+            try {
+                const response = await fetch('/system-admin/api/admin/roles');
+                const data = await response.json();
+                
+                if (data.success && data.roles && data.roles.length > 0) {
+                    const roleSelect = document.getElementById('role');
+                    
+                    // Clear existing options except the first one
+                    roleSelect.innerHTML = '<option value="">Select a role</option>';
+                    
+                    // Add each role as an option
+                    data.roles.forEach(role => {
+                        const option = document.createElement('option');
+                        option.value = role.roleName;
+                        option.textContent = role.roleName.replace('_', ' ');
+                        roleSelect.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading roles for dropdown:', error);
+                showError('Error loading roles. Please refresh the page.');
+            }
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            const userEmail = document.getElementById('userEmail').value;
+            
+            // Load roles first, then user data
+            loadRoleDropdown().then(() => {
+                if (userEmail) {
+                    loadUserData(userEmail);
+                }
+            });
+            
+            // Add form event listeners
+            document.getElementById('editUserForm').addEventListener('submit', handleUpdateUser);
+            document.getElementById('cancelBtn').addEventListener('click', handleCancel);
+        });
+
+        // Load user data
+        async function loadUserData(email) {
+            try {
+                showLoading(true);
+                
+                const response = await fetch(`/system-admin/api/admin/users/${email}`);
+                const data = await response.json();
+                
+                if (data.success && data.user) {
+                    currentUser = data.user;
+                    populateForm(data.user);
+                    loadUserActivity(email);
+                } else {
+                    showError('Failed to load user data: ' + (data.message || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                showError('Error loading user data: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Populate form with user data
+        function populateForm(user) {
+            document.getElementById('firstName').value = user.firstName || '';
+            document.getElementById('lastName').value = user.lastName || '';
+            document.getElementById('email').value = user.email || '';
+            document.getElementById('phoneNumber').value = user.phoneNumber || '';
+            document.getElementById('role').value = user.role || '';
+            
+            // Clear password field
+            document.getElementById('password').value = '';
+        }
+
+        // Load user activity data
+        async function loadUserActivity(email) {
+            try {
+                // This would typically call an API to get user activity
+                // For now, we'll show placeholder data
+                document.getElementById('appointmentCount').textContent = '0';
+                document.getElementById('ticketCount').textContent = '0';
+                document.getElementById('lastLogin').textContent = 'Never';
+            } catch (error) {
+                console.error('Error loading user activity:', error);
+            }
+        }
+
+        // Handle form submission
+        async function handleUpdateUser(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            const userData = {
+                firstName: formData.get('firstName'),
+                lastName: formData.get('lastName'),
+                email: formData.get('email'),
+                phoneNumber: formData.get('phoneNumber'),
+                password: formData.get('password'),
+                role: formData.get('role')
+            };
+            
+            // Validate required fields
+            if (!userData.firstName || !userData.lastName || !userData.email || !userData.role) {
+                showError('Please fill in all required fields');
+                return;
+            }
+            
+            try {
+                showLoading(true);
+                console.log('Updating user with data:', userData);
+                
+                const response = await fetch(`/system-admin/api/admin/users/${userData.email}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(userData)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('Update response:', data);
+                
+                if (data.success) {
+                    showSuccess('User updated successfully!');
+                    // Redirect back to dashboard after a short delay
+                    setTimeout(() => {
+                        const adminEmail = document.getElementById('adminEmail').value;
+                        window.location.href = `/system-admin/dashboard?email=${adminEmail}`;
+                    }, 2000);
+                } else {
+                    showError('Failed to update user: ' + (data.message || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error updating user:', error);
+                showError('Error updating user: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Handle cancel button
+        function handleCancel() {
+            if (confirm('Are you sure you want to cancel? Any unsaved changes will be lost.')) {
+                const adminEmail = document.getElementById('adminEmail').value;
+                window.location.href = `/system-admin/dashboard?email=${adminEmail}`;
+            }
+        }
+
+        // Show success message
+        function showSuccess(message) {
+            const container = document.getElementById('messageContainer');
+            const successDiv = document.getElementById('successMessage');
+            const successText = document.getElementById('successText');
+            
+            successText.textContent = message;
+            successDiv.classList.remove('hidden');
+            document.getElementById('errorMessage').classList.add('hidden');
+            container.classList.remove('hidden');
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                container.classList.add('hidden');
+            }, 5000);
+        }
+
+        // Show error message
+        function showError(message) {
+            const container = document.getElementById('messageContainer');
+            const errorDiv = document.getElementById('errorMessage');
+            const errorText = document.getElementById('errorText');
+            
+            errorText.textContent = message;
+            errorDiv.classList.remove('hidden');
+            document.getElementById('successMessage').classList.add('hidden');
+            container.classList.remove('hidden');
+            
+            // Auto-hide after 8 seconds
+            setTimeout(() => {
+                container.classList.add('hidden');
+            }, 8000);
+        }
+
+        // Show/hide loading overlay
+        function showLoading(show) {
+            const overlay = document.getElementById('loadingOverlay');
+            const updateBtn = document.getElementById('updateBtn');
+            
+            if (show) {
+                overlay.classList.remove('hidden');
+                updateBtn.disabled = true;
+            } else {
+                overlay.classList.add('hidden');
+                updateBtn.disabled = false;
+            }
+        }
+
+        // Form validation
+        function validateForm() {
+            const firstName = document.getElementById('firstName').value.trim();
+            const lastName = document.getElementById('lastName').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const role = document.getElementById('role').value;
+            
+            if (!firstName || !lastName || !email || !role) {
+                showError('Please fill in all required fields');
+                return false;
+            }
+            
+            // Email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showError('Please enter a valid email address');
+                return false;
+            }
+            
+            return true;
+        }
+
+        // Add real-time validation
+        document.getElementById('firstName').addEventListener('blur', validateForm);
+        document.getElementById('lastName').addEventListener('blur', validateForm);
+        document.getElementById('email').addEventListener('blur', validateForm);
+        document.getElementById('role').addEventListener('change', validateForm);
+    </script>
+</body>
+</html>

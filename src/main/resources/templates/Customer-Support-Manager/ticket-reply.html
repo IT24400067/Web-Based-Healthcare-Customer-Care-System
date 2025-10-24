@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Respond to Ticket - MediFlow Connect</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'teal': {
+                            50: '#f0fdfa', 100: '#ccfbf1', 200: '#99f6e4', 300: '#5eead4', 400: '#2dd4bf',
+                            500: '#14b8a6', 600: '#0d9488', 700: '#0f766e', 800: '#115e59', 900: '#134e4a',
+                        },
+                        'cyan': {
+                            50: '#ecfeff', 100: '#cffafe', 200: '#a5f3fc', 300: '#67e8f9', 400: '#22d3ee',
+                            500: '#06b6d4', 600: '#0891b2', 700: '#0e7490', 800: '#155e75', 900: '#164e63',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #0d9488 0%, #0891b2 100%);
+        }
+        .status-open { background-color: #fef3c7; color: #92400e; }
+        .status-in-progress { background-color: #dbeafe; color: #1e40af; }
+        .status-resolved { background-color: #d1fae5; color: #065f46; }
+        .status-closed { background-color: #f3f4f6; color: #374151; }
+        .priority-low { background-color: #f0fdf4; color: #166534; }
+        .priority-medium { background-color: #fef3c7; color: #92400e; }
+        .priority-high { background-color: #fecaca; color: #991b1b; }
+        .priority-urgent { background-color: #fca5a5; color: #7f1d1d; }
+    </style>
+</head>
+<body class="font-inter bg-gradient-to-br from-teal-50 to-cyan-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-lg py-4 px-6 flex justify-between items-center">
+        <div class="flex items-center">
+            <img src="https://i.ibb.co/S6D712p/Arogya-Medical-Center-Logo.png" alt="Arogya Medical Center Logo" class="h-10 mr-3">
+            <h1 class="text-2xl font-bold text-teal-700">MediFlow Connect</h1>
+        </div>
+        <nav class="flex items-center space-x-4">
+            <a href="/customer-support-manager.html" class="text-teal-600 hover:text-teal-800 font-medium px-4 py-2 rounded-md transition-colors duration-300">Dashboard</a>
+            <form th:action="@{/logout}" method="post" class="inline-block">
+                <button type="submit" class="bg-red-500 hover:bg-red-600 text-white font-medium px-4 py-2 rounded-md transition-colors duration-300">Logout</button>
+            </form>
+        </nav>
+    </header>
+
+    <main class="container mx-auto mt-8 p-4">
+        <!-- Success Message -->
+        <div id="successMessage" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4 hidden" role="alert">
+            <span class="block sm:inline">Success message</span>
+        </div>
+
+        <!-- Error Message -->
+        <div id="errorMessage" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 hidden" role="alert">
+            <span class="block sm:inline" id="errorText">Error message</span>
+        </div>
+
+        <!-- Ticket Details Card -->
+        <div class="bg-white rounded-xl shadow-lg p-8 mb-8">
+            <h2 class="text-3xl font-bold text-gray-900 mb-6">Ticket Details</h2>
+            <div id="ticketDetails" class="space-y-4">
+                <!-- Ticket details will be populated here by JavaScript -->
+                <div class="text-center text-gray-500 py-8">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-500 mx-auto mb-4"></div>
+                    <p>Loading ticket details...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Previous Replies Section -->
+        <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100 mb-8">
+            <h3 class="text-xl font-bold text-gray-900 mb-6">Previous Replies</h3>
+            <div id="repliesContainer">
+                <!-- Replies will be loaded here -->
+                <div class="text-center text-gray-500 py-8">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-500 mx-auto mb-4"></div>
+                    <p>Loading replies...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reply Form Card -->
+        <div class="bg-white rounded-xl shadow-lg p-8">
+            <h2 class="text-3xl font-bold text-gray-900 mb-6">Respond to Ticket</h2>
+            <div class="border-b border-teal-200 mb-8"></div>
+            
+            <form id="replyForm" class="space-y-6">
+                <input type="hidden" id="ticketId" />
+                
+                <!-- Ticket ID Field -->
+                <div>
+                    <label for="ticketIdDisplay" class="block text-sm font-medium text-gray-700 mb-2">Ticket ID:</label>
+                    <input type="text" id="ticketIdDisplay" readonly class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-600 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300">
+                </div>
+                
+                <!-- Response Message Field -->
+                <div>
+                    <label for="replyMessage" class="block text-sm font-medium text-gray-700 mb-2">Response Message:</label>
+                    <textarea id="replyMessage" rows="6" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300 resize-none" placeholder="Enter your response..."></textarea>
+                </div>
+                
+                <!-- Update Status Field -->
+                <div>
+                    <label for="newStatus" class="block text-sm font-medium text-gray-700 mb-2">Update Status:</label>
+                    <select id="newStatus" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300">
+                        <option value="open">Open</option>
+                        <option value="in-progress">In Progress</option>
+                        <option value="resolved">Resolved</option>
+                        <option value="closed">Closed</option>
+                    </select>
+                </div>
+                
+                <!-- Send Response Button -->
+                <div class="flex justify-end">
+                    <button type="submit" class="bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white font-medium px-8 py-3 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+                        Send Response
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <!-- Update Reply Modal -->
+    <div id="updateReplyModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-2/3 lg:w-1/2 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-medium text-gray-900">Update Reply</h3>
+                    <button onclick="closeUpdateReplyModal()" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="updateReplyMessage" class="block text-sm font-medium text-gray-700 mb-2">Reply Message:</label>
+                    <textarea id="updateReplyMessage" rows="6" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300 resize-none" placeholder="Enter your updated reply..."></textarea>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="updateStatus" class="block text-sm font-medium text-gray-700 mb-2">Update Status:</label>
+                    <select id="updateStatus" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300">
+                        <option value="open">Open</option>
+                        <option value="in-progress">In Progress</option>
+                        <option value="resolved">Resolved</option>
+                        <option value="closed">Closed</option>
+                    </select>
+                </div>
+                
+                <div class="flex justify-end space-x-3">
+                    <button onclick="closeUpdateReplyModal()" class="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-md transition-colors duration-300">
+                        Cancel
+                    </button>
+                    <button onclick="updateReply()" class="px-4 py-2 bg-teal-500 hover:bg-teal-600 text-white rounded-md transition-colors duration-300">
+                        Update Reply
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteConfirmModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-1/3 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-medium text-gray-900">Confirm Delete</h3>
+                    <button onclick="closeDeleteConfirmModal()" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="mb-6">
+                    <div class="flex items-center mb-4">
+                        <div class="flex-shrink-0">
+                            <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <h4 class="text-sm font-medium text-gray-900">Are you sure?</h4>
+                            <p class="text-sm text-gray-500 mt-1">This action will permanently delete the reply and reset the ticket status to "Open". This cannot be undone.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end space-x-3">
+                    <button onclick="closeDeleteConfirmModal()" class="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-md transition-colors duration-300">
+                        Cancel
+                    </button>
+                    <button onclick="deleteReply()" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors duration-300">
+                        Delete Reply
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Wait for DOM to be fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, starting ticket reply page initialization...');
+            
+            // Get ticket ID from URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const ticketId = urlParams.get('ticketId');
+            
+            console.log('Ticket ID from URL:', ticketId);
+            
+            if (!ticketId) {
+                showError('No ticket ID provided');
+                return;
+            }
+
+            // Set the ticket ID in the form
+            document.getElementById('ticketId').value = ticketId;
+            document.getElementById('ticketIdDisplay').value = `#${ticketId}`;
+
+            console.log('Loading ticket details and replies for ticket ID:', ticketId);
+
+            // Load ticket details and replies
+            loadTicketDetails(ticketId);
+            loadTicketReplies(ticketId);
+
+            // Handle form submission
+            document.getElementById('replyForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                sendReply();
+            });
+        });
+
+        // Load ticket details
+        function loadTicketDetails(ticketId) {
+            console.log('Loading ticket details for ticket ID:', ticketId);
+            fetch(`/api/support-tickets/${ticketId}`)
+                .then(response => {
+                    console.log('Ticket details response status:', response.status);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Ticket details response data:', data);
+                    if (data.success) {
+                        displayTicketDetails(data.data);
+                    } else {
+                        showError('Ticket not found: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading ticket details:', error);
+                    showError('Error loading ticket details: ' + error.message);
+                });
+        }
+
+        // Load ticket replies (now stored in the ticket itself)
+        function loadTicketReplies(ticketId) {
+            console.log('Loading ticket replies for ticket ID:', ticketId);
+            fetch(`/api/support-tickets/${ticketId}`)
+                .then(response => {
+                    console.log('Ticket response status:', response.status);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Ticket response data:', data);
+                    if (data.success) {
+                        displayTicketReply(data.data);
+                    } else {
+                        console.error('Error loading ticket:', data.message);
+                        showNoReplies();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading ticket:', error);
+                    showNoReplies();
+                });
+        }
+
+        // Display ticket details
+        function displayTicketDetails(ticket) {
+            console.log('Displaying ticket details:', ticket);
+            const container = document.getElementById('ticketDetails');
+            
+            container.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <div class="flex items-center space-x-3 mb-4">
+                            <h4 class="text-lg font-semibold text-gray-900">Ticket #${ticket.ticketId}</h4>
+                            <span class="px-3 py-1 rounded-full text-sm font-medium status-${ticket.status.replace(' ', '-')}">${ticket.status}</span>
+                            <span class="px-3 py-1 rounded-full text-sm font-medium priority-${ticket.priority}">${ticket.priority}</span>
+                        </div>
+                        <div class="space-y-2">
+                            <p class="text-gray-600"><strong>Subject:</strong> ${ticket.subject}</p>
+                            <p class="text-gray-600"><strong>Category:</strong> ${ticket.category}</p>
+                            <p class="text-gray-600"><strong>Customer:</strong> ${ticket.userEmail}</p>
+                            <p class="text-gray-600"><strong>Created:</strong> ${new Date(ticket.createdAt).toLocaleString()}</p>
+                        </div>
+                    </div>
+                    <div>
+                        <h5 class="font-medium text-gray-900 mb-2">Description:</h5>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <p class="text-gray-700">${ticket.description}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            console.log('Ticket details displayed successfully');
+        }
+
+        // Display ticket reply (now stored in the ticket itself)
+        function displayTicketReply(ticket) {
+            console.log('Displaying ticket reply:', ticket);
+            const container = document.getElementById('repliesContainer');
+            
+            if (!ticket.reply || ticket.reply.trim() === '') {
+                showNoReplies();
+                return;
+            }
+            
+            const replyDate = ticket.replyDate ? new Date(ticket.replyDate).toLocaleString() : 'No date';
+            const updatedDate = ticket.updatedAt ? new Date(ticket.updatedAt).toLocaleString() : null;
+            
+            container.innerHTML = `
+                <div class="border border-gray-200 rounded-lg p-4 mb-4 bg-gray-50">
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="flex items-center space-x-3">
+                            <span class="font-medium text-gray-900">Support Manager</span>
+                            <span class="text-sm text-gray-500">${replyDate}</span>
+                            ${updatedDate ? `<span class="text-xs text-blue-600">(Updated: ${updatedDate})</span>` : ''}
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">Status: ${ticket.status}</span>
+                            <button onclick="openUpdateReplyModal(${ticket.ticketId}, '${ticket.reply.replace(/'/g, "\\'")}', '${ticket.status}')" 
+                                    class="px-3 py-1 bg-teal-500 hover:bg-teal-600 text-white text-xs rounded-md transition-colors duration-300">
+                                Update Reply
+                            </button>
+                            <button onclick="confirmDeleteReply(${ticket.ticketId})" 
+                                    class="px-3 py-1 bg-red-500 hover:bg-red-600 text-white text-xs rounded-md transition-colors duration-300">
+                                Delete Reply
+                            </button>
+                        </div>
+                    </div>
+                    <div class="text-gray-700">
+                        ${ticket.reply}
+                    </div>
+                </div>
+            `;
+            console.log('Ticket reply displayed successfully');
+        }
+
+        // Show no replies message
+        function showNoReplies() {
+            console.log('Showing no replies message');
+            const container = document.getElementById('repliesContainer');
+            container.innerHTML = `
+                <div class="text-center text-gray-500 py-8">
+                    <svg class="w-12 h-12 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                    </svg>
+                    <p>No replies yet. Be the first to reply!</p>
+                </div>
+            `;
+            console.log('No replies message displayed');
+        }
+
+        // Send reply
+        function sendReply() {
+            console.log('Sending reply...');
+            const ticketId = document.getElementById('ticketId').value;
+            const replyMessage = document.getElementById('replyMessage').value;
+            const newStatus = document.getElementById('newStatus').value;
+
+            console.log('Reply data:', { ticketId, replyMessage, newStatus });
+
+            if (!replyMessage.trim()) {
+                showError('Please enter a response message');
+                return;
+            }
+
+            const replyData = {
+                ticketId: parseInt(ticketId),
+                replyMessage: replyMessage.trim(),
+                newStatus: newStatus
+            };
+
+            console.log('Sending reply data:', replyData);
+
+            fetch('/api/support-tickets/reply', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(replyData),
+            })
+            .then(response => {
+                console.log('Reply response status:', response.status);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Reply response data:', data);
+                if (data.success) {
+                    showSuccess('Reply sent successfully!');
+                    // Clear the form
+                    document.getElementById('replyMessage').value = '';
+                    // Reload replies to show the new one
+                    loadTicketReplies(ticketId);
+                    // Optionally redirect back to dashboard after a delay
+                    setTimeout(() => {
+                        window.location.href = '/customer-support-manager.html';
+                    }, 3000);
+                } else {
+                    showError('Error sending reply: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error sending reply:', error);
+                showError('Error sending reply: ' + error.message);
+            });
+        }
+
+        // Show success message
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            const errorDiv = document.getElementById('errorMessage');
+            
+            errorDiv.classList.add('hidden');
+            successDiv.classList.remove('hidden');
+            successDiv.querySelector('span').textContent = message;
+        }
+
+        // Show error message
+        function showError(message) {
+            const successDiv = document.getElementById('successMessage');
+            const errorDiv = document.getElementById('errorMessage');
+            
+            successDiv.classList.add('hidden');
+            errorDiv.classList.remove('hidden');
+            document.getElementById('errorText').textContent = message;
+        }
+
+        // Global variable to store current ticket ID for update
+        let currentTicketIdForUpdate = null;
+        
+        // Global variable to store current ticket ID for delete
+        let currentTicketIdForDelete = null;
+
+        // Open update reply modal
+        function openUpdateReplyModal(ticketId, currentReply, currentStatus) {
+            console.log('Opening update reply modal for ticket ID:', ticketId);
+            console.log('Current status:', currentStatus);
+            currentTicketIdForUpdate = ticketId;
+            
+            // Set the current reply text in the modal
+            document.getElementById('updateReplyMessage').value = currentReply;
+            
+            // Set the current status in the dropdown
+            document.getElementById('updateStatus').value = currentStatus;
+            
+            // Show the modal
+            document.getElementById('updateReplyModal').classList.remove('hidden');
+        }
+
+        // Close update reply modal
+        function closeUpdateReplyModal() {
+            console.log('Closing update reply modal');
+            document.getElementById('updateReplyModal').classList.add('hidden');
+            currentTicketIdForUpdate = null;
+            
+            // Clear the textarea and reset status dropdown
+            document.getElementById('updateReplyMessage').value = '';
+            document.getElementById('updateStatus').value = 'open';
+        }
+
+        // Update reply function
+        function updateReply() {
+            console.log('Updating reply for ticket ID:', currentTicketIdForUpdate);
+            
+            const updatedReplyMessage = document.getElementById('updateReplyMessage').value;
+            const newStatus = document.getElementById('updateStatus').value;
+            
+            if (!updatedReplyMessage.trim()) {
+                showError('Please enter an updated reply message');
+                return;
+            }
+            
+            const updateData = {
+                replyMessage: updatedReplyMessage.trim(),
+                newStatus: newStatus
+            };
+            
+            console.log('Sending update data:', updateData);
+            
+            fetch(`/api/support-tickets/${currentTicketIdForUpdate}/reply`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(updateData),
+            })
+            .then(response => {
+                console.log('Update response status:', response.status);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Update response data:', data);
+                if (data.success) {
+                    showSuccess('Reply and status updated successfully!');
+                    closeUpdateReplyModal();
+                    // Reload replies to show the updated one
+                    loadTicketReplies(currentTicketIdForUpdate);
+                } else {
+                    showError('Error updating reply: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error updating reply:', error);
+                showError('Error updating reply: ' + error.message);
+            });
+        }
+
+        // Confirm delete reply
+        function confirmDeleteReply(ticketId) {
+            console.log('Confirming delete for ticket ID:', ticketId);
+            currentTicketIdForDelete = ticketId;
+            
+            // Show the confirmation modal
+            document.getElementById('deleteConfirmModal').classList.remove('hidden');
+        }
+
+        // Close delete confirmation modal
+        function closeDeleteConfirmModal() {
+            console.log('Closing delete confirmation modal');
+            document.getElementById('deleteConfirmModal').classList.add('hidden');
+            currentTicketIdForDelete = null;
+        }
+
+        // Delete reply function
+        function deleteReply() {
+            console.log('Deleting reply for ticket ID:', currentTicketIdForDelete);
+            
+            fetch(`/api/support-tickets/${currentTicketIdForDelete}/reply`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => {
+                console.log('Delete response status:', response.status);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Delete response data:', data);
+                if (data.success) {
+                    showSuccess('Reply deleted successfully!');
+                    closeDeleteConfirmModal();
+                    // Reload replies to show the updated state (no replies)
+                    loadTicketReplies(currentTicketIdForDelete);
+                } else {
+                    showError('Error deleting reply: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting reply:', error);
+                showError('Error deleting reply: ' + error.message);
+            });
+        }
+    </script>
+</body>
+</html>

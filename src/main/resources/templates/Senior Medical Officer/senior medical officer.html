@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Senior Medical Officer Dashboard - MediFlow Connect</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'teal': {
+                            50: '#f0fdfa', 100: '#ccfbf1', 200: '#99f6e4', 300: '#5eead4', 400: '#2dd4bf',
+                            500: '#14b8a6', 600: '#0d9488', 700: '#0f766e', 800: '#115e59', 900: '#134e4a',
+                        },
+                        'cyan': {
+                            50: '#ecfeff', 100: '#cffafe', 200: '#a5f3fc', 300: '#67e8f9', 400: '#22d3ee',
+                            500: '#06b6d4', 600: '#0891b2', 700: '#0e7490', 800: '#155e75', 900: '#164e63',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #0d9488 0%, #0891b2 100%);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="font-inter bg-gray-50 text-gray-800">
+    <!-- Header -->
+    <header class="bg-white shadow-md py-4 px-6 flex justify-between items-center">
+        <div class="flex items-center">
+            <img src="https://i.ibb.co/S6D712p/Arogya-Medical-Center-Logo.png" alt="Arogya Medical Center Logo" class="h-10 mr-3">
+            <h1 class="text-2xl font-bold text-teal-700">MediFlow Connect</h1>
+        </div>
+        <nav class="flex items-center space-x-4">
+            <a href="/" class="text-teal-600 hover:text-teal-800 font-medium px-4 py-2 rounded-md transition-colors duration-300">Home</a>
+            <form th:action="@{/logout}" method="post" class="inline-block">
+                <button type="submit" class="bg-red-500 hover:bg-red-600 text-white font-medium px-4 py-2 rounded-md transition-colors duration-300">Logout</button>
+            </form>
+        </nav>
+    </header>
+
+    <main class="container mx-auto mt-8 p-4">
+        <!-- Hidden field to store SMO email for JavaScript -->
+        <input type="hidden" id="smoEmail" th:value="${seniorMedicalOfficer.email}" />
+        
+        <!-- Welcome Section -->
+        <div class="bg-gradient-to-r from-teal-500 to-cyan-500 text-white p-6 rounded-lg shadow-lg mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-3xl font-bold mb-2">Welcome, <span th:text="${seniorMedicalOfficer.fullName}">Senior Medical Officer</span>!</h2>
+                    <p class="text-teal-100">Your comprehensive dashboard for managing medical reports, recommendations, and patient care oversight.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Success/Error Messages -->
+        <div th:if="${param.success}" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
+            <span class="block sm:inline" th:if="${param.success[0] == 'login_successful'}">✅ Login successful! Welcome to your dashboard.</span>
+            <span class="block sm:inline" th:if="${param.success[0] == 'report_saved'}">✅ Medical report saved successfully!</span>
+            <span class="block sm:inline" th:if="${param.success[0] == 'recommendation_saved'}">✅ Medical recommendation saved successfully!</span>
+        </div>
+
+        <div th:if="${param.error}" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+            <span class="block sm:inline" th:text="${param.error[0]}">Error message</span>
+        </div>
+
+
+        <!-- Main Dashboard Layout -->
+        <div class="flex flex-col lg:flex-row gap-8 min-h-screen">
+            <!-- Profile Sidebar -->
+            <div class="lg:w-80 bg-gradient-to-b from-teal-500 to-cyan-600 rounded-xl shadow-xl p-6 text-white lg:min-h-screen lg:sticky lg:top-0">
+                <div class="flex items-center mb-8">
+                    <div class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center mr-3">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold">Medical Officer</h3>
+                </div>
+                
+                <!-- Profile Info -->
+                <div class="mb-8">
+                    <div class="mb-6">
+                        <div>
+                            <p class="font-semibold text-lg" th:text="${seniorMedicalOfficer.fullName != null ? seniorMedicalOfficer.fullName : 'Senior Medical Officer'}">Senior Medical Officer</p>
+                            <p class="text-sm text-teal-100" th:text="${seniorMedicalOfficer.email}">smo@example.com</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="space-y-3 flex-1">
+                    <button onclick="scrollToPatientLookup()" class="w-full flex items-center bg-white bg-opacity-10 hover:bg-opacity-20 text-white py-3 px-4 rounded-lg transition-all duration-300 border border-white border-opacity-20 hover:border-opacity-40">
+                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                        <span class="font-medium">Patient Lookup & Management</span>
+                    </button>
+                    <button onclick="scrollToMedicalReport()" class="w-full flex items-center bg-white bg-opacity-10 hover:bg-opacity-20 text-white py-3 px-4 rounded-lg transition-all duration-300 border border-white border-opacity-20 hover:border-opacity-40">
+                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <span class="font-medium">Medical Report</span>
+                    </button>
+                    <button onclick="scrollToMedicalRecommendations()" class="w-full flex items-center bg-white bg-opacity-10 hover:bg-opacity-20 text-white py-3 px-4 rounded-lg transition-all duration-300 border border-white border-opacity-20 hover:border-opacity-40">
+                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                        </svg>
+                        <span class="font-medium">Medical Recommendations</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Main Content Area -->
+            <div class="flex-1">
+                <!-- Dashboard Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
+                    <!-- Patient Lookup & Management Card -->
+                    <div id="patientLookupSection" class="bg-white rounded-2xl shadow-xl p-8 card-hover border border-gray-100">
+                        <div class="flex items-center mb-6">
+                            <div class="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mr-4">
+                                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-900">Patient Lookup & Management</h3>
+                        </div>
+                        <p class="text-gray-600 mb-6">Search for patients by email and manage their medical records</p>
+                        
+                        <!-- Patient Search Form -->
+                        <div class="space-y-4 mb-6">
+                            <div>
+                                <label for="patientEmail" class="block text-sm font-medium text-gray-700 mb-2">Patient Email</label>
+                                <input type="email" id="patientEmail" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-300" placeholder="ama@gmail.com">
+                            </div>
+                            <button onclick="searchPatient()" class="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-3 px-6 rounded-lg font-semibold hover:from-purple-600 hover:to-pink-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                                Search Patient →
+                            </button>
+                        </div>
+                        
+                        <!-- Patient Details Display -->
+                        <div id="patientDetails" class="mb-6" style="display: none;">
+                            <h4 class="text-lg font-semibold text-gray-800 mb-3">Patient Information</h4>
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <div class="space-y-2">
+                                    <div>
+                                        <p class="text-sm text-gray-600">Name:</p>
+                                        <p id="patientName" class="font-medium text-gray-800">-</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-600">Email:</p>
+                                        <p id="patientEmailDisplay" class="font-medium text-gray-800">-</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-600">Phone:</p>
+                                        <p id="patientPhone" class="font-medium text-gray-800">-</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-600">Role:</p>
+                                        <p id="patientRole" class="font-medium text-gray-800">-</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-600">Registration Date:</p>
+                                        <p id="patientRegDate" class="font-medium text-gray-800">-</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="space-y-3">
+                            <button id="addReportBtn" onclick="showAddReportForm()" class="w-full bg-gray-300 text-gray-500 py-3 px-6 rounded-lg font-semibold cursor-not-allowed" disabled>
+                                Add Report →
+                            </button>
+                            <button id="addRecommendationBtn" onclick="showAddRecommendationForm()" class="w-full bg-gray-300 text-gray-500 py-3 px-6 rounded-lg font-semibold cursor-not-allowed" disabled>
+                                Add Recommendation →
+                            </button>
+                            <button id="viewHistoryBtn" onclick="viewPatientHistory()" class="w-full bg-gray-300 text-gray-500 py-3 px-6 rounded-lg font-semibold cursor-not-allowed" disabled>
+                                View History →
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Medical Report Card -->
+                    <div id="medicalReportSection" class="bg-white rounded-2xl shadow-xl p-8 card-hover border border-gray-100">
+                        <div class="flex items-center mb-6">
+                            <div class="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center mr-4">
+                                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-900">Medical Report</h3>
+                        </div>
+                        <p class="text-gray-600 mb-6">Create and save detailed medical reports for patients</p>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label for="reportPatientEmail" class="block text-sm font-medium text-gray-700 mb-2">Patient Email</label>
+                                <input type="email" id="reportPatientEmail" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-300" placeholder="ama@gmail.com">
+                            </div>
+                            <div>
+                                <label for="reportType" class="block text-sm font-medium text-gray-700 mb-2">Report Type</label>
+                                <select id="reportType" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-300">
+                                    <option value="">Select Report Type</option>
+                                    <option value="Blood Test">Blood Test</option>
+                                    <option value="X-Ray">X-Ray</option>
+                                    <option value="MRI">MRI</option>
+                                    <option value="CT Scan">CT Scan</option>
+                                    <option value="Ultrasound">Ultrasound</option>
+                                    <option value="ECG">ECG</option>
+                                    <option value="Pathology">Pathology</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="reportDate" class="block text-sm font-medium text-gray-700 mb-2">Report Date</label>
+                                <input type="date" id="reportDate" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-300" value="2025-10-05">
+                            </div>
+                            <div>
+                                <label for="reportDescription" class="block text-sm font-medium text-gray-700 mb-2">Report Description</label>
+                                <textarea id="reportDescription" rows="4" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-none transition-colors duration-300" placeholder="Enter detailed medical report description including findings, observations, and medical notes..."></textarea>
+                            </div>
+                            <div>
+                                <label for="reportPriority" class="block text-sm font-medium text-gray-700 mb-2">Priority Level</label>
+                                <select id="reportPriority" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-300">
+                                    <option value="low" selected>Low</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="high">High</option>
+                                    <option value="urgent">Urgent</option>
+                                </select>
+                            </div>
+                            <button onclick="saveMedicalReport()" class="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white py-3 px-6 rounded-lg font-semibold hover:from-green-600 hover:to-emerald-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                                Save Report →
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Medical Recommendations Card -->
+                    <div id="medicalRecommendationsSection" class="bg-white rounded-2xl shadow-xl p-8 card-hover border border-gray-100">
+                        <div class="flex items-center mb-6">
+                            <div class="w-16 h-16 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full flex items-center justify-center mr-4">
+                                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-900">Medical Recommendations</h3>
+                        </div>
+                        <p class="text-gray-600 mb-6">Create detailed medical recommendations and treatment plans</p>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label for="recommendationPatientEmail" class="block text-sm font-medium text-gray-700 mb-2">Patient Email</label>
+                                <input type="email" id="recommendationPatientEmail" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-300" placeholder="ama@gmail.com">
+                            </div>
+                            <div>
+                                <label for="recommendationType" class="block text-sm font-medium text-gray-700 mb-2">Recommendation Type</label>
+                                <select id="recommendationType" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-300">
+                                    <option value="">Select Type</option>
+                                    <option value="Medication">Medication</option>
+                                    <option value="Therapy">Therapy</option>
+                                    <option value="Surgery">Surgery</option>
+                                    <option value="Follow-up">Follow-up</option>
+                                    <option value="Lifestyle">Lifestyle Changes</option>
+                                    <option value="Diet">Diet Modification</option>
+                                    <option value="Exercise">Exercise Plan</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="recommendationDetails" class="block text-sm font-medium text-gray-700 mb-2">Recommendation Details</label>
+                                <textarea id="recommendationDetails" rows="4" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none transition-colors duration-300" placeholder="Enter detailed recommendation including instructions, dosage, frequency, and any specific guidelines..."></textarea>
+                            </div>
+                            <div>
+                                <label for="recommendationPriority" class="block text-sm font-medium text-gray-700 mb-2">Priority</label>
+                                <select id="recommendationPriority" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-300">
+                                    <option value="low" selected>Low</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="high">High</option>
+                                    <option value="urgent">Urgent</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="followUpDate" class="block text-sm font-medium text-gray-700 mb-2">Follow-up Date (Optional)</label>
+                                <input type="date" id="followUpDate" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-300" placeholder="mm/dd/yyyy">
+                            </div>
+                            <button onclick="saveMedicalRecommendation()" class="w-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-3 px-6 rounded-lg font-semibold hover:from-indigo-600 hover:to-purple-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                                Save Recommendation →
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-12 mt-12">
+        <div class="container mx-auto px-6">
+            <div class="grid md:grid-cols-4 gap-8">
+                <!-- Hospital Info -->
+                <div>
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-10 h-10 bg-gradient-to-br from-teal-500 to-cyan-500 rounded-full flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg">AROGYA MEDICAL CENTER</h3>
+                            <p class="text-sm text-gray-400">MediFlow Connect Portal</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-400 text-sm leading-relaxed">
+                        Medical officer portal for managing patient reports, recommendations, and clinical oversight.
+                    </p>
+                </div>
+
+                <!-- Medical Services -->
+                <div>
+                    <h4 class="font-semibold text-lg mb-4">Medical Services</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="/senior-medical-officer/patient-history.html" class="text-gray-400 hover:text-white transition-colors">Patient History</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Medical Reports</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Recommendations</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Clinical Notes</a></li>
+                    </ul>
+                </div>
+
+                <!-- Quick Links -->
+                <div>
+                    <h4 class="font-semibold text-lg mb-4">Quick Links</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="/" class="text-gray-400 hover:text-white transition-colors">Home</a></li>
+                        <li><a href="/login.html" class="text-gray-400 hover:text-white transition-colors">Login</a></li>
+                        <li><a href="/signup.html" class="text-gray-400 hover:text-white transition-colors">Sign Up</a></li>
+                        <li><a href="tel:1313" class="text-gray-400 hover:text-white transition-colors">Emergency: 1313</a></li>
+                    </ul>
+                </div>
+
+                <!-- Medical Statistics -->
+                <div>
+                    <h4 class="font-semibold text-lg mb-4">Medical Statistics</h4>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-400">Reports Today</span>
+                            <span class="text-blue-400 text-sm font-medium">12</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-400">Recommendations</span>
+                            <span class="text-green-400 text-sm font-medium">8</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-400">Patients Reviewed</span>
+                            <span class="text-purple-400 text-sm font-medium">15</span>
+                        </div>
+                    </div>
+                    <div class="mt-4 text-sm text-gray-400">
+                        <p>📧 medical@arogyamedical.com</p>
+                        <p>📞 +94 11 466 5500</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-sm text-gray-400">
+                <p>&copy; 2025 Arogya Medical Center. All Rights Reserved. | MediFlow Connect Portal - Medical Officer Dashboard</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Get SMO email from hidden field
+        const smoEmail = document.getElementById('smoEmail').value;
+
+        // Search patient function
+        function searchPatient() {
+            const patientEmail = document.getElementById('patientEmail').value;
+            if (!patientEmail) {
+                alert('Please enter a patient email');
+                return;
+            }
+
+            fetch(`/api/patient/search?email=${encodeURIComponent(patientEmail)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const patient = data.patient;
+                        document.getElementById('patientName').textContent = patient.fullName;
+                        document.getElementById('patientEmailDisplay').textContent = patient.email;
+                        document.getElementById('patientPhone').textContent = patient.phoneNumber;
+                        document.getElementById('patientRole').textContent = patient.role;
+                        document.getElementById('patientRegDate').textContent = patient.registrationDate;
+                        
+                        // Show patient details section
+                        document.getElementById('patientDetails').style.display = 'block';
+                        
+                        // Enable action buttons
+                        enableActionButtons();
+                        
+                        // Auto-fill email in other forms
+                        document.getElementById('reportPatientEmail').value = patient.email;
+                        document.getElementById('recommendationPatientEmail').value = patient.email;
+                    } else {
+                        alert('Patient not found: ' + data.message);
+                        // Hide patient details if search fails
+                        document.getElementById('patientDetails').style.display = 'none';
+                        // Disable action buttons
+                        disableActionButtons();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error searching for patient');
+                    // Hide patient details and disable buttons on error
+                    document.getElementById('patientDetails').style.display = 'none';
+                    disableActionButtons();
+                });
+        }
+
+        // Enable action buttons
+        function enableActionButtons() {
+            const addReportBtn = document.getElementById('addReportBtn');
+            const addRecommendationBtn = document.getElementById('addRecommendationBtn');
+            const viewHistoryBtn = document.getElementById('viewHistoryBtn');
+            
+            addReportBtn.disabled = false;
+            addReportBtn.className = 'w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white py-3 px-6 rounded-lg font-semibold hover:from-green-600 hover:to-emerald-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1';
+            
+            addRecommendationBtn.disabled = false;
+            addRecommendationBtn.className = 'w-full bg-gradient-to-r from-teal-500 to-cyan-500 text-white py-3 px-6 rounded-lg font-semibold hover:from-teal-600 hover:to-cyan-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1';
+            
+            viewHistoryBtn.disabled = false;
+            viewHistoryBtn.className = 'w-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-3 px-6 rounded-lg font-semibold hover:from-indigo-600 hover:to-purple-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1';
+        }
+
+        // Disable action buttons
+        function disableActionButtons() {
+            const addReportBtn = document.getElementById('addReportBtn');
+            const addRecommendationBtn = document.getElementById('addRecommendationBtn');
+            const viewHistoryBtn = document.getElementById('viewHistoryBtn');
+            
+            addReportBtn.disabled = true;
+            addReportBtn.className = 'w-full bg-gray-300 text-gray-500 py-3 px-6 rounded-lg font-semibold cursor-not-allowed';
+            
+            addRecommendationBtn.disabled = true;
+            addRecommendationBtn.className = 'w-full bg-gray-300 text-gray-500 py-3 px-6 rounded-lg font-semibold cursor-not-allowed';
+            
+            viewHistoryBtn.disabled = true;
+            viewHistoryBtn.className = 'w-full bg-gray-300 text-gray-500 py-3 px-6 rounded-lg font-semibold cursor-not-allowed';
+        }
+
+        // Show add report form
+        function showAddReportForm() {
+            const patientEmail = document.getElementById('patientEmail').value;
+            if (!patientEmail) {
+                alert('Please search for a patient first');
+                return;
+            }
+            document.getElementById('reportPatientEmail').value = patientEmail;
+        }
+
+        // Show add recommendation form
+        function showAddRecommendationForm() {
+            const patientEmail = document.getElementById('patientEmail').value;
+            if (!patientEmail) {
+                alert('Please search for a patient first');
+                return;
+            }
+            document.getElementById('recommendationPatientEmail').value = patientEmail;
+        }
+
+        // View patient history
+        function viewPatientHistory() {
+            const patientEmail = document.getElementById('patientEmail').value;
+            if (!patientEmail) {
+                alert('Please search for a patient first');
+                return;
+            }
+            // Navigate to patient history page
+            window.location.href = `/senior-medical-officer/patient-history?email=${encodeURIComponent(patientEmail)}`;
+        }
+
+        // Sidebar functions
+
+        function scrollToPatientLookup() {
+            // Scroll to the Patient Lookup section
+            const patientLookupSection = document.getElementById('patientLookupSection');
+            if (patientLookupSection) {
+                patientLookupSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                // Add a highlight effect
+                patientLookupSection.style.border = '2px solid #14b8a6';
+                setTimeout(() => {
+                    patientLookupSection.style.border = '1px solid #e5e7eb';
+                }, 2000);
+            }
+        }
+
+        function scrollToMedicalReport() {
+            // Scroll to the Medical Report section
+            const medicalReportSection = document.getElementById('medicalReportSection');
+            if (medicalReportSection) {
+                medicalReportSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                // Add a highlight effect
+                medicalReportSection.style.border = '2px solid #14b8a6';
+                setTimeout(() => {
+                    medicalReportSection.style.border = '1px solid #e5e7eb';
+                }, 2000);
+            }
+        }
+
+        function scrollToMedicalRecommendations() {
+            // Scroll to the Medical Recommendations section
+            const medicalRecommendationsSection = document.getElementById('medicalRecommendationsSection');
+            if (medicalRecommendationsSection) {
+                medicalRecommendationsSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                // Add a highlight effect
+                medicalRecommendationsSection.style.border = '2px solid #14b8a6';
+                setTimeout(() => {
+                    medicalRecommendationsSection.style.border = '1px solid #e5e7eb';
+                }, 2000);
+            }
+        }
+
+        // Save medical report function
+        function saveMedicalReport() {
+            const patientEmail = document.getElementById('reportPatientEmail').value;
+            const reportType = document.getElementById('reportType').value;
+            const reportDate = document.getElementById('reportDate').value;
+            const reportDescription = document.getElementById('reportDescription').value;
+            const priority = document.getElementById('reportPriority').value;
+
+            if (!patientEmail || !reportType || !reportDate || !reportDescription) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            const reportData = {
+                patientEmail: patientEmail,
+                reportType: reportType,
+                reportDate: reportDate,
+                reportDescription: reportDescription,
+                priority: priority
+            };
+
+            fetch('/api/medical-report/save', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(reportData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Medical report saved successfully!');
+                    // Clear form
+                    document.getElementById('reportType').value = '';
+                    document.getElementById('reportDate').value = '';
+                    document.getElementById('reportDescription').value = '';
+                    document.getElementById('reportPriority').value = 'low';
+                } else {
+                    alert('Error saving medical report: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error saving medical report');
+            });
+        }
+
+        // Save medical recommendation function
+        function saveMedicalRecommendation() {
+            const patientEmail = document.getElementById('recommendationPatientEmail').value;
+            const recommendationType = document.getElementById('recommendationType').value;
+            const recommendationDetails = document.getElementById('recommendationDetails').value;
+            const followUpDate = document.getElementById('followUpDate').value;
+            const priority = document.getElementById('recommendationPriority').value;
+
+            if (!patientEmail || !recommendationType || !recommendationDetails) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            const recommendationData = {
+                patientEmail: patientEmail,
+                recommendationType: recommendationType,
+                recommendationDetails: recommendationDetails,
+                followUpDate: followUpDate,
+                priority: priority
+            };
+
+            fetch('/api/medical-recommendation/save', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(recommendationData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Medical recommendation saved successfully!');
+                    // Clear form
+                    document.getElementById('recommendationType').value = '';
+                    document.getElementById('recommendationDetails').value = '';
+                    document.getElementById('followUpDate').value = '';
+                    document.getElementById('recommendationPriority').value = 'low';
+                } else {
+                    alert('Error saving medical recommendation: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error saving medical recommendation');
+            });
+        }
+
+        // Set today's date as default for date inputs
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('reportDate').value = today;
+            document.getElementById('followUpDate').value = today;
+        });
+    </script>
+</body>
+</html>

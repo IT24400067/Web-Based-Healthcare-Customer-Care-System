@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arogya Medical Center | MediFlow Connect - Sign Up</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'teal': {
+                            50: '#f0fdfa',
+                            100: '#ccfbf1',
+                            200: '#99f6e4',
+                            300: '#5eead4',
+                            400: '#2dd4bf',
+                            500: '#14b8a6',
+                            600: '#0d9488',
+                            700: '#0f766e',
+                            800: '#115e59',
+                            900: '#134e4a',
+                        },
+                        'cyan': {
+                            50: '#ecfeff',
+                            100: '#cffafe',
+                            200: '#a5f3fc',
+                            300: '#67e8f9',
+                            400: '#22d3ee',
+                            500: '#06b6d4',
+                            600: '#0891b2',
+                            700: '#0e7490',
+                            800: '#155e75',
+                            900: '#164e63',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #0d9488 0%, #0891b2 100%);
+        }
+        .hero-bg {
+            background: linear-gradient(135deg, rgba(13, 148, 136, 0.9) 0%, rgba(8, 145, 178, 0.9) 100%);
+            background-size: cover;
+            background-position: center;
+        }
+        .form-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        .input-focus:focus {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(13, 148, 136, 0.15);
+        }
+        .btn-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(13, 148, 136, 0.3);
+        }
+    </style>
+</head>
+<body class="font-inter gradient-bg min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <!-- Logo -->
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 bg-gradient-to-br from-teal-500 to-cyan-500 rounded-full flex items-center justify-center">
+                        <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-800">AROGYA MEDICAL CENTER</h1>
+                        <p class="text-sm text-teal-600 font-medium">MediFlow Connect Portal</p>
+                        <p class="text-xs text-gray-500">A Softlogic Group Company</p>
+                    </div>
+                </div>
+
+                <!-- Emergency Contact -->
+                <div class="hidden md:flex items-center space-x-4 bg-teal-50 px-4 py-2 rounded-lg">
+                    <div class="text-center">
+                        <div class="text-teal-600 font-bold text-lg">24/7</div>
+                        <div class="text-teal-800 font-bold text-xl">1313</div>
+                    </div>
+                    <div class="text-sm text-gray-600">
+                        <div class="font-semibold">Emergency Hotline</div>
+                        <div>Always Available</div>
+                    </div>
+                </div>
+
+                <!-- Back to Home Button -->
+                <a href="/" class="bg-gradient-to-r from-teal-500 to-cyan-500 text-white px-8 py-3 rounded-lg font-semibold hover:from-teal-600 hover:to-cyan-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                    Back to Home
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="min-h-screen flex items-center justify-center py-12 px-4">
+        <div class="w-full max-w-2xl">
+            <!-- Hero Section -->
+            <div class="hero-bg rounded-2xl p-8 md:p-12 mb-8 text-center text-white">
+                <div class="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <svg class="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12,6A6,6 0 0,0 6,12A6,6 0 0,0 12,18A6,6 0 0,0 18,12A6,6 0 0,0 12,6M12,8A4,4 0 0,1 16,12A4,4 0 0,1 12,16A4,4 0 0,1 8,12A4,4 0 0,1 12,8Z"/>
+                    </svg>
+                </div>
+                <h1 class="text-4xl md:text-5xl font-bold mb-4">Join MediFlow Connect</h1>
+                <p class="text-xl text-teal-100 leading-relaxed">
+                    Create your account to access comprehensive healthcare management services
+                </p>
+            </div>
+
+            <!-- Signup Form -->
+            <div class="form-card rounded-2xl p-8 md:p-12 shadow-xl">
+                <!-- Error Messages -->
+                <div th:if="${param.error}" class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg mb-6">
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                        </svg>
+                        <span th:text="${param.error[0]}">Error message</span>
+                    </div>
+                </div>
+
+                <div th:if="${error}" class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg mb-6">
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                        </svg>
+                        <span th:text="${error}">Error message</span>
+                    </div>
+                </div>
+
+                <form method="post" action="/signup" id="signupForm" class="space-y-6">
+                    <!-- Name Fields -->
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            <label for="firstName" class="block text-sm font-semibold text-white">
+                                First Name <span class="text-red-500">*</span>
+                            </label>
+                            <input 
+                                type="text" 
+                                name="firstName" 
+                                id="firstName" 
+                                placeholder="Enter your first name" 
+                                required 
+                                class="w-full px-4 py-3 border-2 border-white/20 bg-white/10 text-white placeholder-teal-200 rounded-lg focus:border-teal-500 focus:outline-none transition-all duration-300 input-focus"
+                            />
+                            <div class="error-message text-red-500 text-sm hidden" id="firstNameError"></div>
+                        </div>
+                        <div class="space-y-2">
+                            <label for="lastName" class="block text-sm font-semibold text-white">
+                                Last Name <span class="text-red-500">*</span>
+                            </label>
+                            <input 
+                                type="text" 
+                                name="lastName" 
+                                id="lastName" 
+                                placeholder="Enter your last name" 
+                                required 
+                                class="w-full px-4 py-3 border-2 border-white/20 bg-white/10 text-white placeholder-teal-200 rounded-lg focus:border-teal-500 focus:outline-none transition-all duration-300 input-focus"
+                            />
+                            <div class="error-message text-red-500 text-sm hidden" id="lastNameError"></div>
+                        </div>
+                    </div>
+
+                    <!-- Email Field -->
+                    <div class="space-y-2">
+                        <label for="email" class="block text-sm font-semibold text-white">
+                            Email Address <span class="text-red-500">*</span>
+                        </label>
+                        <input 
+                            type="email" 
+                            name="email" 
+                            id="email" 
+                            placeholder="Enter your email address" 
+                            required 
+                            class="w-full px-4 py-3 border-2 border-white/20 bg-white/10 text-white placeholder-teal-200 rounded-lg focus:border-teal-500 focus:outline-none transition-all duration-300 input-focus"
+                        />
+                        <div class="error-message text-red-500 text-sm hidden" id="emailError"></div>
+                    </div>
+
+                    <!-- Phone Field -->
+                    <div class="space-y-2">
+                        <label for="phoneNumber" class="block text-sm font-semibold text-white">
+                            Phone Number <span class="text-red-500">*</span>
+                        </label>
+                        <input 
+                            type="tel" 
+                            name="phoneNumber" 
+                            id="phoneNumber" 
+                            placeholder="Enter your phone number" 
+                            required 
+                            class="w-full px-4 py-3 border-2 border-white/20 bg-white/10 text-white placeholder-teal-200 rounded-lg focus:border-teal-500 focus:outline-none transition-all duration-300 input-focus"
+                        />
+                        <div class="error-message text-red-500 text-sm hidden" id="phoneNumberError"></div>
+                    </div>
+
+                    <!-- Password Fields -->
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            <label for="password" class="block text-sm font-semibold text-white">
+                                Password <span class="text-red-500">*</span>
+                            </label>
+                            <input 
+                                type="password" 
+                                name="password" 
+                                id="password" 
+                                placeholder="Create a strong password" 
+                                required 
+                                class="w-full px-4 py-3 border-2 border-white/20 bg-white/10 text-white placeholder-teal-200 rounded-lg focus:border-teal-500 focus:outline-none transition-all duration-300 input-focus"
+                            />
+                            <div class="password-strength text-sm" id="passwordStrength"></div>
+                            <div class="error-message text-red-500 text-sm hidden" id="passwordError"></div>
+                        </div>
+                        <div class="space-y-2">
+                            <label for="confirmPassword" class="block text-sm font-semibold text-white">
+                                Confirm Password <span class="text-red-500">*</span>
+                            </label>
+                            <input 
+                                type="password" 
+                                name="confirmPassword" 
+                                id="confirmPassword" 
+                                placeholder="Confirm your password" 
+                                required 
+                                class="w-full px-4 py-3 border-2 border-white/20 bg-white/10 text-white placeholder-teal-200 rounded-lg focus:border-teal-500 focus:outline-none transition-all duration-300 input-focus"
+                            />
+                            <div class="error-message text-red-500 text-sm hidden" id="confirmPasswordError"></div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button 
+                        type="submit" 
+                        class="w-full bg-gradient-to-r from-teal-500 to-cyan-500 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:from-teal-600 hover:to-cyan-600 transition-all duration-300 shadow-lg btn-hover"
+                    >
+                        Create Account
+                    </button>
+                </form>
+
+                <!-- Login Link -->
+                <div class="mt-8 pt-6 border-t border-white/20 text-center">
+                    <p class="text-white mb-2">Already have an account?</p>
+                    <a href="/login.html" class="text-teal-200 font-semibold hover:text-white transition-colors duration-300">
+                        Sign in to your account
+                    </a>
+                </div>
+            </div>
+
+            <!-- Features Section -->
+            <div class="mt-12 grid md:grid-cols-3 gap-6">
+                <div class="text-center p-6 bg-white rounded-xl shadow-lg">
+                    <div class="w-12 h-12 bg-gradient-to-br from-teal-400 to-cyan-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                        </svg>
+                    </div>
+                    <h3 class="font-bold text-gray-800 mb-2">Download Lab Reports</h3>
+                    <p class="text-sm text-gray-600">Access your laboratory test results with ease</p>
+                </div>
+                <div class="text-center p-6 bg-white rounded-xl shadow-lg">
+                    <div class="w-12 h-12 bg-gradient-to-br from-teal-400 to-cyan-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12,6A6,6 0 0,0 6,12A6,6 0 0,0 12,18A6,6 0 0,0 18,12A6,6 0 0,0 12,6M12,8A4,4 0 0,1 16,12A4,4 0 0,1 12,16A4,4 0 0,1 8,12A4,4 0 0,1 12,8Z"/>
+                        </svg>
+                    </div>
+                    <h3 class="font-bold text-gray-800 mb-2">Book Consultations</h3>
+                    <p class="text-sm text-gray-600">Schedule appointments with specialists</p>
+                </div>
+                <div class="text-center p-6 bg-white rounded-xl shadow-lg">
+                    <div class="w-12 h-12 bg-gradient-to-br from-teal-400 to-cyan-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M9,20.42L2.79,14.21L5.62,11.38L9,14.77L18.88,4.88L21.71,7.71L9,20.42Z"/>
+                        </svg>
+                    </div>
+                    <h3 class="font-bold text-gray-800 mb-2">Pre-registration</h3>
+                    <p class="text-sm text-gray-600">Complete registration before your visit</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8 mt-12">
+        <div class="container mx-auto px-6">
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Hospital Info -->
+                <div>
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-8 h-8 bg-gradient-to-br from-teal-500 to-cyan-500 rounded-full flex items-center justify-center">
+                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="font-bold">AROGYA MEDICAL CENTER</h3>
+                            <p class="text-sm text-gray-400">MediFlow Connect Portal</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-400 text-sm leading-relaxed">
+                        Join our healthcare community. Create your account to access comprehensive medical services and manage your health records.
+                    </p>
+                </div>
+
+                <!-- Account Services -->
+                <div>
+                    <h4 class="font-semibold text-lg mb-4">Account Services</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="/login.html" class="text-gray-400 hover:text-white transition-colors">Sign In</a></li>
+                        <li><a href="/" class="text-gray-400 hover:text-white transition-colors">Home</a></li>
+                        <li><a href="tel:1313" class="text-gray-400 hover:text-white transition-colors">Emergency: 1313</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Help & Support</a></li>
+                    </ul>
+                </div>
+
+                <!-- Emergency Contact -->
+                <div>
+                    <h4 class="font-semibold text-lg mb-4">24/7 Emergency</h4>
+                    <div class="bg-red-600 rounded-lg p-4 text-center mb-4">
+                        <div class="text-2xl font-bold">1313</div>
+                        <div class="text-sm">Always Available</div>
+                    </div>
+                    <div class="text-sm text-gray-400">
+                        <p>📍 Main Hospital Complex</p>
+                        <p>Colombo, Sri Lanka</p>
+                        <p>📞 +94 11 466 5500</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-sm text-gray-400">
+                <p>&copy; 2025 Arogya Medical Center. All Rights Reserved. | Solution by SLUT UNI Faculty of Computing</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('signupForm');
+            const password = document.getElementById('password');
+            const confirmPassword = document.getElementById('confirmPassword');
+            const passwordStrength = document.getElementById('passwordStrength');
+
+            // Password strength indicator
+            password.addEventListener('input', function() {
+                const value = password.value;
+                const strength = getPasswordStrength(value);
+
+                passwordStrength.textContent = strength.text;
+                passwordStrength.className = 'password-strength text-sm ' + strength.class;
+            });
+
+            // Form validation
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                if (validateForm()) {
+                    form.submit();
+                }
+            });
+
+            // Real-time validation
+            const inputs = form.querySelectorAll('input[required]');
+            inputs.forEach(input => {
+                input.addEventListener('blur', function() {
+                    validateField(input);
+                });
+            });
+
+            // Confirm password validation
+            confirmPassword.addEventListener('input', function() {
+                validatePasswordMatch();
+            });
+        });
+
+        function getPasswordStrength(password) {
+            let score = 0;
+            if (password.length >= 8) score++;
+            if (/[a-z]/.test(password)) score++;
+            if (/[A-Z]/.test(password)) score++;
+            if (/[0-9]/.test(password)) score++;
+            if (/[^A-Za-z0-9]/.test(password)) score++;
+
+            if (score < 3) {
+                return { text: 'Weak password', class: 'text-red-500' };
+            } else if (score < 5) {
+                return { text: 'Medium strength', class: 'text-yellow-500' };
+            } else {
+                return { text: 'Strong password', class: 'text-green-500' };
+            }
+        }
+
+        function validateForm() {
+            let isValid = true;
+            const inputs = document.querySelectorAll('input[required]');
+
+            inputs.forEach(input => {
+                if (!validateField(input)) {
+                    isValid = false;
+                }
+            });
+
+            if (!validatePasswordMatch()) {
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        function validateField(input) {
+            const value = input.value.trim();
+            const fieldName = input.name;
+            const errorElement = document.getElementById(fieldName + 'Error');
+
+            // Clear previous error
+            input.classList.remove('border-red-500');
+            input.classList.add('border-white/20');
+            errorElement.classList.add('hidden');
+            errorElement.textContent = '';
+
+            // Validation rules
+            if (!value) {
+                showError(input, errorElement, fieldName + ' is required');
+                return false;
+            }
+
+            switch (fieldName) {
+                case 'firstName':
+                case 'lastName':
+                    if (value.length < 2) {
+                        showError(input, errorElement, 'Name must be at least 2 characters');
+                        return false;
+                    }
+                    if (!/^[a-zA-Z\s]+$/.test(value)) {
+                        showError(input, errorElement, 'Name can only contain letters and spaces');
+                        return false;
+                    }
+                    break;
+
+                case 'email':
+                    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+                        showError(input, errorElement, 'Please enter a valid email address');
+                        return false;
+                    }
+                    break;
+
+                case 'phoneNumber':
+                    if (!/^[\+]?[0-9\s\-\(\)]{10,}$/.test(value)) {
+                        showError(input, errorElement, 'Please enter a valid phone number');
+                        return false;
+                    }
+                    break;
+
+                case 'password':
+                    if (value.length < 8) {
+                        showError(input, errorElement, 'Password must be at least 8 characters');
+                        return false;
+                    }
+                    break;
+            }
+
+            return true;
+        }
+
+        function validatePasswordMatch() {
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const errorElement = document.getElementById('confirmPasswordError');
+            const confirmInput = document.getElementById('confirmPassword');
+
+            if (confirmPassword && password !== confirmPassword) {
+                showError(confirmInput, errorElement, 'Passwords do not match');
+                return false;
+            } else {
+                confirmInput.classList.remove('border-red-500');
+                confirmInput.classList.add('border-white/20');
+                errorElement.classList.add('hidden');
+                return true;
+            }
+        }
+
+        function showError(input, errorElement, message) {
+            input.classList.remove('border-white/20');
+            input.classList.add('border-red-500');
+            errorElement.textContent = message;
+            errorElement.classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>

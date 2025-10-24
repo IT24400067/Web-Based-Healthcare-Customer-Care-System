@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arogya Medical Center | MediFlow Connect - Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'teal': {
+                            50: '#f0fdfa',
+                            100: '#ccfbf1',
+                            200: '#99f6e4',
+                            300: '#5eead4',
+                            400: '#2dd4bf',
+                            500: '#14b8a6',
+                            600: '#0d9488',
+                            700: '#0f766e',
+                            800: '#115e59',
+                            900: '#134e4a',
+                        },
+                        'cyan': {
+                            50: '#ecfeff',
+                            100: '#cffafe',
+                            200: '#a5f3fc',
+                            300: '#67e8f9',
+                            400: '#22d3ee',
+                            500: '#06b6d4',
+                            600: '#0891b2',
+                            700: '#0e7490',
+                            800: '#155e75',
+                            900: '#164e63',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #0d9488 0%, #0891b2 100%);
+        }
+        .hero-bg {
+            background: linear-gradient(135deg, rgba(13, 148, 136, 0.9) 0%, rgba(8, 145, 178, 0.9) 100%);
+            background-size: cover;
+            background-position: center;
+        }
+        .form-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        .input-focus:focus {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(13, 148, 136, 0.15);
+        }
+        .btn-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(13, 148, 136, 0.3);
+        }
+    </style>
+</head>
+<body class="font-inter gradient-bg min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <!-- Logo -->
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 bg-gradient-to-br from-teal-500 to-cyan-500 rounded-full flex items-center justify-center">
+                        <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-800">AROGYA MEDICAL CENTER</h1>
+                        <p class="text-sm text-teal-600 font-medium">MediFlow Connect Portal</p>
+                        <p class="text-xs text-gray-500">A Softlogic Group Company</p>
+                    </div>
+                </div>
+
+                <!-- Emergency Contact -->
+                <div class="hidden md:flex items-center space-x-4 bg-teal-50 px-4 py-2 rounded-lg">
+                    <div class="text-center">
+                        <div class="text-teal-600 font-bold text-lg">24/7</div>
+                        <div class="text-teal-800 font-bold text-xl">1313</div>
+                    </div>
+                    <div class="text-sm text-gray-600">
+                        <div class="font-semibold">Emergency Hotline</div>
+                        <div>Always Available</div>
+                    </div>
+                </div>
+
+                <!-- Back to Home Button -->
+                <a href="/" class="bg-gradient-to-r from-teal-500 to-cyan-500 text-white px-8 py-3 rounded-lg font-semibold hover:from-teal-600 hover:to-cyan-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                    Back to Home
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="min-h-screen flex items-center justify-center py-12 px-4">
+        <div class="w-full max-w-2xl">
+            <!-- Hero Section -->
+            <div class="hero-bg rounded-2xl p-8 md:p-12 mb-8 text-center text-white">
+                <div class="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <svg class="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12,6A6,6 0 0,0 6,12A6,6 0 0,0 12,18A6,6 0 0,0 18,12A6,6 0 0,0 12,6M12,8A4,4 0 0,1 16,12A4,4 0 0,1 12,16A4,4 0 0,1 8,12A4,4 0 0,1 12,8Z"/>
+                    </svg>
+                </div>
+                <h1 class="text-4xl md:text-5xl font-bold mb-4">Welcome Back</h1>
+                <p class="text-xl text-teal-100 leading-relaxed">
+                    Sign in to access your healthcare portal and manage your medical records
+                </p>
+            </div>
+
+            <!-- Login Form -->
+            <div class="form-card rounded-2xl p-8 md:p-12 shadow-xl">
+                <!-- Success/Error Messages -->
+                <div th:if="${param.success}" class="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg mb-6">
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                        <span th:if="${param.success[0] == 'login_successful'}">✅ Successfully logged in! Welcome to MediFlow Connect.</span>
+                    </div>
+                </div>
+
+                <div th:if="${param.error}" class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg mb-6">
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                        </svg>
+                        <span th:text="${param.error[0]}">Error message</span>
+                    </div>
+                </div>
+
+                <div th:if="${error}" class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg mb-6">
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                        </svg>
+                        <span th:text="${error}">Error message</span>
+                    </div>
+                </div>
+
+                <form method="post" action="/login" id="loginForm" class="space-y-6">
+                    <!-- Email Field -->
+                    <div class="space-y-2">
+                        <label for="email" class="block text-sm font-semibold text-white">
+                            Email Address <span class="text-red-500">*</span>
+                        </label>
+                        <input 
+                            type="email" 
+                            name="email" 
+                            id="email" 
+                            placeholder="Enter your email address" 
+                            required 
+                            class="w-full px-4 py-3 border-2 border-white/20 bg-white/10 text-white placeholder-teal-200 rounded-lg focus:border-teal-500 focus:outline-none transition-all duration-300 input-focus"
+                        />
+                        <div class="error-message text-red-500 text-sm hidden" id="emailError"></div>
+                    </div>
+
+                    <!-- Password Field -->
+                    <div class="space-y-2">
+                        <label for="password" class="block text-sm font-semibold text-white">
+                            Password <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <input 
+                                type="password" 
+                                name="password" 
+                                id="password" 
+                                placeholder="Enter your password" 
+                                required 
+                                class="w-full px-4 py-3 border-2 border-white/20 bg-white/10 text-white placeholder-teal-200 rounded-lg focus:border-teal-500 focus:outline-none transition-all duration-300 input-focus pr-12"
+                            />
+                            <button 
+                                type="button" 
+                                id="togglePassword" 
+                                class="absolute right-3 top-1/2 transform -translate-y-1/2 text-teal-200 hover:text-white"
+                            >
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+                                    <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="error-message text-red-500 text-sm hidden" id="passwordError"></div>
+                    </div>
+
+                    <!-- Remember Me & Forgot Password -->
+                    <div class="flex items-center justify-between">
+                        <label class="flex items-center">
+                            <input type="checkbox" name="rememberMe" class="rounded border-white/30 text-teal-600 focus:ring-teal-500 bg-white/10">
+                            <span class="ml-2 text-sm text-white">Remember me</span>
+                        </label>
+                        <a href="#" class="text-sm text-teal-200 hover:text-white transition-colors">
+                            Forgot password?
+                        </a>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button 
+                        type="submit" 
+                        class="w-full bg-gradient-to-r from-teal-500 to-cyan-500 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:from-teal-600 hover:to-cyan-600 transition-all duration-300 shadow-lg btn-hover"
+                    >
+                        Sign In
+                    </button>
+                </form>
+
+                <!-- Signup Link -->
+                <div class="mt-8 pt-6 border-t border-white/20 text-center">
+                    <p class="text-white mb-2">Don't have an account?</p>
+                    <a href="/signup.html" class="text-teal-200 font-semibold hover:text-white transition-colors duration-300">
+                        Create your account
+                    </a>
+                </div>
+            </div>
+
+            <!-- Features Section -->
+            <div class="mt-12 grid md:grid-cols-3 gap-6">
+                <div class="text-center p-6 bg-white rounded-xl shadow-lg">
+                    <div class="w-12 h-12 bg-gradient-to-br from-teal-400 to-cyan-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                        </svg>
+                    </div>
+                    <h3 class="font-bold text-gray-800 mb-2">View Lab Reports</h3>
+                    <p class="text-sm text-gray-600">Access your test results instantly</p>
+                </div>
+                <div class="text-center p-6 bg-white rounded-xl shadow-lg">
+                    <div class="w-12 h-12 bg-gradient-to-br from-teal-400 to-cyan-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12,6A6,6 0 0,0 6,12A6,6 0 0,0 12,18A6,6 0 0,0 18,12A6,6 0 0,0 12,6M12,8A4,4 0 0,1 16,12A4,4 0 0,1 12,16A4,4 0 0,1 8,12A4,4 0 0,1 12,8Z"/>
+                        </svg>
+                    </div>
+                    <h3 class="font-bold text-gray-800 mb-2">Book Appointments</h3>
+                    <p class="text-sm text-gray-600">Schedule with specialists</p>
+                </div>
+                <div class="text-center p-6 bg-white rounded-xl shadow-lg">
+                    <div class="w-12 h-12 bg-gradient-to-br from-teal-400 to-cyan-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M9,20.42L2.79,14.21L5.62,11.38L9,14.77L18.88,4.88L21.71,7.71L9,20.42Z"/>
+                        </svg>
+                    </div>
+                    <h3 class="font-bold text-gray-800 mb-2">Manage Records</h3>
+                    <p class="text-sm text-gray-600">Keep track of your health</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8 mt-12">
+        <div class="container mx-auto px-6">
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Hospital Info -->
+                <div>
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-8 h-8 bg-gradient-to-br from-teal-500 to-cyan-500 rounded-full flex items-center justify-center">
+                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="font-bold">AROGYA MEDICAL CENTER</h3>
+                            <p class="text-sm text-gray-400">MediFlow Connect Portal</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-400 text-sm leading-relaxed">
+                        Secure access to your healthcare portal. Manage appointments, view reports, and access medical services.
+                    </p>
+                </div>
+
+                <!-- Quick Access -->
+                <div>
+                    <h4 class="font-semibold text-lg mb-4">Quick Access</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="/signup.html" class="text-gray-400 hover:text-white transition-colors">Create Account</a></li>
+                        <li><a href="/" class="text-gray-400 hover:text-white transition-colors">Home</a></li>
+                        <li><a href="tel:1313" class="text-gray-400 hover:text-white transition-colors">Emergency: 1313</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Forgot Password?</a></li>
+                    </ul>
+                </div>
+
+                <!-- Emergency Contact -->
+                <div>
+                    <h4 class="font-semibold text-lg mb-4">24/7 Emergency</h4>
+                    <div class="bg-red-600 rounded-lg p-4 text-center mb-4">
+                        <div class="text-2xl font-bold">1313</div>
+                        <div class="text-sm">Always Available</div>
+                    </div>
+                    <div class="text-sm text-gray-400">
+                        <p>📍 Main Hospital Complex</p>
+                        <p>Colombo, Sri Lanka</p>
+                        <p>📞 +94 11 466 5500</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-sm text-gray-400">
+                <p>&copy; 2025 Arogya Medical Center. All Rights Reserved. | Solution by SLUT UNI Faculty of Computing</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('loginForm');
+            const togglePassword = document.getElementById('togglePassword');
+            const passwordInput = document.getElementById('password');
+
+            // Password visibility toggle
+            togglePassword.addEventListener('click', function() {
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                
+                // Update icon
+                const icon = this.querySelector('svg');
+                if (type === 'text') {
+                    icon.innerHTML = '<path d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"/>';
+                } else {
+                    icon.innerHTML = '<path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>';
+                }
+            });
+
+            // Form validation
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                if (validateForm()) {
+                    form.submit();
+                }
+            });
+
+            // Real-time validation
+            const inputs = form.querySelectorAll('input[required]');
+            inputs.forEach(input => {
+                input.addEventListener('blur', function() {
+                    validateField(input);
+                });
+            });
+        });
+
+        function validateForm() {
+            let isValid = true;
+            const inputs = document.querySelectorAll('input[required]');
+
+            inputs.forEach(input => {
+                if (!validateField(input)) {
+                    isValid = false;
+                }
+            });
+
+            return isValid;
+        }
+
+        function validateField(input) {
+            const value = input.value.trim();
+            const fieldName = input.name;
+            const errorElement = document.getElementById(fieldName + 'Error');
+
+            // Clear previous error
+            input.classList.remove('border-red-500');
+            input.classList.add('border-white/20');
+            errorElement.classList.add('hidden');
+            errorElement.textContent = '';
+
+            // Validation rules
+            if (!value) {
+                showError(input, errorElement, fieldName + ' is required');
+                return false;
+            }
+
+            switch (fieldName) {
+                case 'email':
+                    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+                        showError(input, errorElement, 'Please enter a valid email address');
+                        return false;
+                    }
+                    break;
+
+                case 'password':
+                    if (value.length < 6) {
+                        showError(input, errorElement, 'Password must be at least 6 characters');
+                        return false;
+                    }
+                    break;
+            }
+
+            return true;
+        }
+
+        function showError(input, errorElement, message) {
+            input.classList.remove('border-white/20');
+            input.classList.add('border-red-500');
+            errorElement.textContent = message;
+            errorElement.classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
